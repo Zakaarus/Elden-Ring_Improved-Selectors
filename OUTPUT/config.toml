@@ -11,9 +11,9 @@
 #
 #NOTES:
 #   - Special exceptions will be added where there's no equivalent in the table.
-#   - Currently these are:
-#   - "Scroll Up"
-#   - "Scroll Down"
+#       *Currently these are: NOT WORKING
+#           - "Scroll Up"
+#           - "Scroll Down"
 
 #===============================================================================================================#
 #NOTES: You should probably unbind vanilla's next slot control.
@@ -21,8 +21,8 @@
 #(you can uncomment them and replace them with unique binds just fine though)
 [spell_selector]
 [spell_selector.controls]
-next = ["Scroll Up"]
-prev = ["Scroll Down"]
+next = ["Scroll Up"] #CHANGE THIS
+prev = ["Scroll Down"] #CHANGE THIS
 to_0 = ["0x31"]
 to_1 = ["0x32"]
 to_2 = ["0x33"]
