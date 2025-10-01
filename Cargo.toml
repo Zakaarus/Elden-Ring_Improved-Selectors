@@ -1,0 +1,47 @@
+[package]
+name = "eldenring_improved-selectors"
+version = "0.0.3"
+edition = "2024"
+
+[dependencies]
+eldenring = "0.10.0"
+eldenring-util = "0.10.0"
+fromsoftware-shared = "0.10.0"
+windows = { version = "0.62.1", features = ["Win32_System_Threading", "Win32_System_LibraryLoader", "Win32_UI_Input_KeyboardAndMouse"] }
+flux-rs = { git  = "https://github.com/flux-rs/flux.git" }
+serde = "1.0.228"
+toml = "0.9.7"
+keyboard-types = "0.8.2"
+anyhow = "1.0.100"
+
+[lib]
+crate-type = ["cdylib"]
+
+#=== Development tool settings ===#
+
+[package.metadata.flux]
+enabled = true
+
+[lints.clippy]
+pedantic = {level = "warn", priority = -1}
+restriction = {level = "warn", priority = -1}
+nursery = {level = "warn", priority = -1}
+cargo = {level = "warn", priority = -1}
+unused_trait_names = "allow"
+std_instead_of_core = "allow"
+needless_return = "allow"
+result_expect_used = "allow"
+panic = "allow"
+multiple_unsafe_ops_per_block = "allow"
+semicolon_outside_block = "allow"
+print_stdout = "allow"
+single_call_fn = "allow"
+arbitrary_source_item_ordering = "allow" #this one's going to need looking at
+question_mark_used = "allow"
+pub_with_shorthand = "allow"
+print_stderr = "allow"
+pub_use = "allow"
+mod_module_files = "allow"
+self_named_module_files = "allow"
+as_conversions = "allow"
+multiple_inherent_impl = "allow" #i might just be extending a struct's functionality wrong?

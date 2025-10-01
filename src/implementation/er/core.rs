@@ -1,0 +1,40 @@
+use std::time::Duration;
+use eldenring::{cs::{CSTaskGroupIndex, CSTaskImp}, fd4::FD4TaskData};
+use eldenring_util::{program::Program, singleton::get_instance, system::wait_for_system_init, task::CSTaskImpExt};
+use super::modlist::MOD_LIST;
+
+///This is what runs when `DllMain` makes its thread
+pub fn entry_point() 
+{
+    wait_for_system_init(&Program::current(), Duration::MAX)
+        .expect("Timeout waiting for system init");
+
+    //SAFETY: See get_instance
+    let cs_task = unsafe 
+    { 
+        get_instance::<CSTaskImp>()
+            .unwrap_or_else(|error|panic!("FAILED SINGLETON LOOKUP ERROR: {error}"))
+            .expect("CSTASKIMP RETURNED NONE?!") 
+    };
+
+    cs_task.run_recurring
+    (
+        move|_: &FD4TaskData| {frame_begin();},
+        CSTaskGroupIndex::FrameBegin,
+    );
+    cs_task.run_recurring
+    (
+        move|_: &FD4TaskData| {frame_end();},
+        CSTaskGroupIndex::FrameEnd,
+    );
+}
+
+fn frame_begin()
+{
+    for er_mod in MOD_LIST {(er_mod.frame_begin)();}
+}
+
+fn frame_end()
+{
+    for er_mod in MOD_LIST {(er_mod.frame_end)();}
+}
