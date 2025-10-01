@@ -8,6 +8,7 @@ use windows::Win32::System::LibraryLoader::DisableThreadLibraryCalls;
 use windows::Win32::System::Threading::QueueUserWorkItem;
 use windows::Win32::System::Threading::WT_EXECUTEDEFAULT;
 use crate::entry_point;
+#[cfg(debug_assertions)]
 use crate::panic_hook;
 
 #[unsafe(no_mangle)]

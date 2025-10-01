@@ -132,6 +132,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2ea6706d74fca54e15f1d40b5cf7fe7f764aaec61352a9fcec58fe27e042fc8"
 
 [[package]]
+name = "elden-ring_improved-selectors"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "eldenring",
+ "eldenring-util",
+ "flux-rs",
+ "fromsoftware-shared",
+ "serde",
+ "toml",
+ "windows 0.62.1",
+]
+
+[[package]]
 name = "eldenring"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -171,21 +185,6 @@ dependencies = [
  "undname",
  "vtable-rs",
  "windows 0.54.0",
-]
-
-[[package]]
-name = "eldenring_spell_selector"
-version = "0.0.3"
-dependencies = [
- "anyhow",
- "eldenring",
- "eldenring-util",
- "flux-rs",
- "fromsoftware-shared",
- "keyboard-types",
- "serde",
- "toml",
- "windows 0.62.1",
 ]
 
 [[package]]
@@ -278,16 +277,6 @@ checksum = "4b0f83760fb341a774ed326568e19f5a863af4a952def8c39f9ab92fd95b88e5"
 dependencies = [
  "equivalent",
  "hashbrown",
-]
-
-[[package]]
-name = "keyboard-types"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec565a935632f47329ed84336b468fb957e8f10a8ddc614937f0dc1e61765e99"
-dependencies = [
- "bitflags 2.9.4",
- "serde",
 ]
 
 [[package]]

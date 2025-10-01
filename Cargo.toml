@@ -1,6 +1,6 @@
 [package]
-name = "eldenring_improved-selectors"
-version = "0.0.3"
+name = "elden-ring_improved-selectors"
+version = "1.0.0"
 edition = "2024"
 
 [dependencies]
@@ -11,7 +11,6 @@ windows = { version = "0.62.1", features = ["Win32_System_Threading", "Win32_Sys
 flux-rs = { git  = "https://github.com/flux-rs/flux.git" }
 serde = "1.0.228"
 toml = "0.9.7"
-keyboard-types = "0.8.2"
 anyhow = "1.0.100"
 
 [lib]
@@ -45,3 +44,4 @@ mod_module_files = "allow"
 self_named_module_files = "allow"
 as_conversions = "allow"
 multiple_inherent_impl = "allow" #i might just be extending a struct's functionality wrong?
+default_numeric_fallback = "allow"

@@ -43,7 +43,7 @@ static FULL_CONFIG: LazyLock<Value> = LazyLock::new
         .flatten()
         .unwrap_or_else
         (|error|{
-            println!("Reverting to defaults due to error. ERROR: {error}");
+            eprintln!("Reverting to defaults due to error. ERROR: {error}");
             return DEFAULTS.to_owned();
         });
 });

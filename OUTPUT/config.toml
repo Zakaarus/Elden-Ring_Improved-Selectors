@@ -1,7 +1,39 @@
-test = 1
-#default_test = "This isn't even a boolean?!"
-overwrite_test = "hey..."
+#===========================================================CONTROLS===========================================================#
+#WARNING: 
+#   - Everything is case sensitive.
+#   - Make sure to unbind any keys ingame that overlap unless you want the simultaneous commands.
+#
+#GUIDE:
+#   - See: https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+#   - Take the Value column's contents and place it in quotation marks and square brackets. 
+#   - You can place multiple quotation mark surrounded keys separated by commas to represent key combinations.
+#       *(e.g. ["0x31","0x32"] -> Press 1 and 2 at the same time.) Technically the 0x is optional.
+#
+#NOTES:
+#   - Special exceptions will be added where there's no equivalent in the table.
+#   - Currently these are:
+#   - "Scroll Up"
+#   - "Scroll Down"
 
+#===============================================================================================================#
+#NOTES: You should probably unbind vanilla's next slot control.
+#VERY IMPORTANT NOTE: I haven't figured out how to stop partially overlapping controls like shift+1 and 1 on to_0 and to_10 from breaking.
+#(you can uncomment them and replace them with unique binds just fine though)
+[spell_selector]
 [spell_selector.controls]
-test = []
-tests = []
+next = ["Scroll Up"]
+prev = ["Scroll Down"]
+to_0 = ["0x31"]
+to_1 = ["0x32"]
+to_2 = ["0x33"]
+to_3 = ["0x34"]
+to_4 = ["0x35"]
+to_5 = ["0x36"]
+to_6 = ["0x37"]
+to_7 = ["0x38"]
+to_8 = ["0x39"]
+to_9 = ["0x30"]
+#to_10 = ["0x31", "0x10"]
+#to_11 = ["0x32", "0x10"]
+#to_12 = ["0x33", "0x10"]
+#to_13 = ["0x34", "0x10"]
