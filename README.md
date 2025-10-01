@@ -8,7 +8,7 @@ todo:
 - spell_selector logic
 - config keybinds to action buffer function
 - other gameplay changes
-- separate the crate into a workspace consisting of generic (DllMain + Settings, can be reused across games), Elden Ring (Elden Ring specific code), and Elden Ring Modlist (Specific Elden Ring mods that make the gameplay changes)
+- separate the crate into a workspace consisting of generic (DllMain + Settings, can be reused across games, in /src), Elden Ring (Elden Ring specific code, in src/implementation), and Elden Ring Modlist (Specific Elden Ring mods that make the gameplay changes, in implementation/modlist)
 
 
 
