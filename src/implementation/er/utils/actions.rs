@@ -1,4 +1,7 @@
+use std::{sync::{LazyLock, Mutex}, thread};
+
 use eldenring_util::input::is_key_pressed;
+use rdev::{Event, EventType, listen};
 
 use crate::settings::Config;
 
@@ -23,23 +26,77 @@ fn is_input_pressed(input:&str)
     return i32::from_str_radix
     (
         input.strip_prefix("0x")
-            .unwrap_or(input), 16
+            .unwrap_or(input),
+         16
     )
         .map_or_else
         (
             |_| 
             {
-                return is_key_pressed(9001); //idk yet
+                match input
+                {
+                    "Scroll Up" => return is_scroll(true),
+                    "Scroll Down" => return is_scroll(false),
+                    _ => return false
+                }
             },
             |key| return is_key_pressed(key)
         );
+}
+
+fn is_scroll(up:bool) -> bool
+{
+    up
+}
+
+struct EventList 
+{
+    scroll_up:bool,
+    scroll_down:bool,
+}
+impl EventList 
+{
+    const fn new() 
+        -> Self
+    {
+        return Self
+        {
+            scroll_up:false,
+            scroll_down:false,
+        }
+    }   
+}
+static RDEV_EVENTS: LazyLock<Mutex<EventList>> = LazyLock::new(||{
+    thread::spawn
+    (||{
+        listen(rdev_events)
+            .unwrap_or_else(|error|panic!("RDEV FAILED ERROR: {error:#?}"));
+    });
+    return Mutex::new(EventList::new());
+});
+
+fn rdev_events(event:Event)
+{
+    match event.event_type
+    {
+        EventType::Wheel { delta_x, delta_y } => 
+        {
+            if delta_y > 0 {
+                //RDEV_EVENTS
+            }
+            if delta_y < 0 {
+                //RDEV_EVENTS
+            }
+        }
+        _ => {}
+    }
 }
 
 /* <==========================================================================================================================> */
 
 /// Config -> actions bindings list
 pub fn get_action_bindings(config:&Config) 
-    -> Vec<(String, Vec<String>)> //I know I shouldn't use a tuple but I'll fix it eventually
+    -> Vec<(String, Vec<String>)> //I probably shouldn't use a tuple but I'll fix it eventually
 {
     return config.deep_query(&["controls"])
         .and_then(|table| return table.as_table() )

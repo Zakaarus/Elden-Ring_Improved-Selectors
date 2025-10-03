@@ -1,6 +1,6 @@
 [package]
 name = "elden-ring_improved-selectors"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2024"
 
 [dependencies]
@@ -12,6 +12,7 @@ flux-rs = { git  = "https://github.com/flux-rs/flux.git" }
 serde = "1.0.228"
 toml = "0.9.7"
 anyhow = "1.0.100"
+rdev = "0.5.3"
 
 [lib]
 crate-type = ["cdylib"]

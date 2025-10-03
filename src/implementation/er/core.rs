@@ -7,8 +7,12 @@ use super::modlist::MOD_LIST;
 pub fn entry_point() 
 {
     wait_for_system_init(&Program::current(), Duration::MAX)
-        .expect("Timeout waiting for system init");
+        .unwrap_or_else(|error|panic!("SYSTEM INIT WAIT ERROR: {error}"));
 
+
+    for er_mod in MOD_LIST {(er_mod.init)();}
+
+    
     //SAFETY: See get_instance
     let cs_task = unsafe 
     { 
@@ -16,25 +20,24 @@ pub fn entry_point()
             .unwrap_or_else(|error|panic!("FAILED SINGLETON LOOKUP ERROR: {error}"))
             .expect("CSTASKIMP RETURNED NONE?!") 
     };
-
     cs_task.run_recurring
     (
-        move|_: &FD4TaskData| {frame_begin();},
+        move|data: &FD4TaskData| {frame_begin(data);},
         CSTaskGroupIndex::FrameBegin,
     );
     cs_task.run_recurring
     (
-        move|_: &FD4TaskData| {frame_end();},
+        move|data: &FD4TaskData| {frame_end(data);},
         CSTaskGroupIndex::FrameEnd,
     );
 }
 
-fn frame_begin()
+fn frame_begin(data:&FD4TaskData)
 {
-    for er_mod in MOD_LIST {(er_mod.frame_begin)();}
+    for er_mod in MOD_LIST {(er_mod.frame_begin)(data);}
 }
 
-fn frame_end()
+fn frame_end(data:&FD4TaskData)
 {
-    for er_mod in MOD_LIST {(er_mod.frame_end)();}
+    for er_mod in MOD_LIST {(er_mod.frame_end)(data);}
 }

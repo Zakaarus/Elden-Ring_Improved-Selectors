@@ -1,9 +1,6 @@
-/// Action buffer -> slot for that frame.
-/// Caller should use the conditionally return value at the beginning of the frame, then revert it to a more permanent value at the end.
-pub fn spell_select(actions:&[&str]) 
-    -> Option<i32> 
+/// Read action buffer
+pub fn receive_actions(actions:&[&str])
 {
-    let temp_slot: Option<i32> = None;
     for action in actions
     {
         //SAFETY: todo GET RID OF END_MAGIC_SLOT UNSAFETY
@@ -24,10 +21,12 @@ pub fn spell_select(actions:&[&str])
 
         }
     }
-    return temp_slot;
 }
 
+pub fn begin_slot() -> Option<i32> {return None}
+pub fn end_slot() -> Option<i32> {return unsafe{Some(MAGIC_SLOT)}}
+
 /// Persistent slot that persists through frames
-/// It is set at the end of the frame unconditionally
-pub static mut MAGIC_SLOT:i32 = 1;
+/// It should be set at the end of the frame unconditionally
+static mut MAGIC_SLOT:i32 = 1;
 
