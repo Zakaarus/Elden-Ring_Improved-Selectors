@@ -1,13 +1,15 @@
 use std::sync::LazyLock;
+use eldenring::fd4::FD4TaskData;
 
-use crate::implementation::er::utils::{actions_this_frame, get_action_bindings};
+use super::action_reader::register_bindings;
+use crate::implementation::er::modlist::spell_selector::internal::action;
 use crate::settings::Config;
-use super::super::utils::{get_world_chr_man, get_main_player};
+use super::super::utils::{get_world_chr_man, get_main_player,change_spell,equipped_magic};
 use super::ERMod;
 
+
 mod internal;
-use eldenring::fd4::FD4TaskData;
-use internal::{receive_actions, begin_slot, end_slot};
+use internal::{begin_slot, end_slot};
 
 /* <=====================================================================================================================================> */
 
@@ -20,28 +22,28 @@ pub const MOD:ERMod = ERMod
 };
 
 static CONFIG: LazyLock<Config> = LazyLock::new(||return Config::new(MOD.context));
-static ACTION_BINDINGS: LazyLock<Vec<(String,Vec<String>)>> = LazyLock::new(||{return get_action_bindings(&CONFIG);});
 
 /* <=====================================================================================================================================> */
 
-const fn init(){}//nothing yet
+fn init(){register_bindings(&CONFIG, action);}
 
-fn frame_begin(data:&FD4TaskData) 
+fn frame_begin(_data:&FD4TaskData) 
     -> Option<()>
 {
     let world_chr_man = get_world_chr_man()?;
     let main_player = get_main_player(world_chr_man)?;
-    receive_actions(&actions_this_frame(&ACTION_BINDINGS));
-    main_player.player_game_data.equipment.equip_magic_data.selected_slot = begin_slot()?;
+    change_spell(Some(main_player),begin_slot()?);
     return Some(());
 }
 
-fn frame_end(data:&FD4TaskData) 
+fn frame_end(_data:&FD4TaskData) 
     -> Option<()>
 {
     let world_chr_man = get_world_chr_man()?;
     let main_player = get_main_player(world_chr_man)?;
-    main_player.player_game_data.equipment.equip_magic_data.selected_slot = end_slot()?;
+    change_spell(Some(main_player),end_slot());
     return Some(());
 }
+
+/* <=====================================================================================================================================> */
 

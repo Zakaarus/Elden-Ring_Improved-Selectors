@@ -1,7 +1,12 @@
 [package]
 name = "elden-ring_improved-selectors"
-version = "1.0.1"
+description = "Reworked item, spell and weapon selection systems for Elden Ring."
+version = "2.0.0"
 edition = "2024"
+license = "MIT" #TBD
+repository = "https://github.com/Zakaarus/Elden-Ring_Improved-Selectors"
+keywords = ["elden ring"] #TBD
+categories = ["elden ring"] #TBD
 
 [dependencies]
 eldenring = "0.10.0"
@@ -9,14 +14,15 @@ eldenring-util = "0.10.0"
 fromsoftware-shared = "0.10.0"
 windows = { version = "0.62.1", features = ["Win32_System_Threading", "Win32_System_LibraryLoader", "Win32_UI_Input_KeyboardAndMouse"] }
 flux-rs = { git  = "https://github.com/flux-rs/flux.git" }
+win-key-event = {git ="https://github.com/friesliam/win-key-event"}
 serde = "1.0.228"
 toml = "0.9.7"
 anyhow = "1.0.100"
+tokio = "1.47.1"
 rdev = "0.5.3"
 
 [lib]
 crate-type = ["cdylib"]
-
 #=== Development tool settings ===#
 
 [package.metadata.flux]
@@ -30,7 +36,7 @@ cargo = {level = "warn", priority = -1}
 unused_trait_names = "allow"
 std_instead_of_core = "allow"
 needless_return = "allow"
-result_expect_used = "allow"
+expect_used = "allow" #why would you remove the ability to separate result and option expect
 panic = "allow"
 multiple_unsafe_ops_per_block = "allow"
 semicolon_outside_block = "allow"
@@ -46,3 +52,7 @@ self_named_module_files = "allow"
 as_conversions = "allow"
 multiple_inherent_impl = "allow" #i might just be extending a struct's functionality wrong?
 default_numeric_fallback = "allow"
+separated_literal_suffix = "allow"
+integer_division_remainder_used = "allow" #bruh
+blanket_clippy_restriction_lints = "allow" #lol I'll disable them as I go
+multiple_crate_versions = "allow" #if I could figure out how patching works I would.

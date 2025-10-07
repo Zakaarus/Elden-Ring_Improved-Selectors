@@ -1,39 +1,58 @@
-#===========================================================CONTROLS===========================================================#
 #WARNING: 
-#   - Everything is case sensitive.
-#   - Make sure to unbind any keys ingame that overlap unless you want the simultaneous commands.
-#
+#   - Pretty much everything is case sensitive.
+
+[general.enabled]
+action_reader = true
+spell_selector = true
+
+#===========================================================CONTROLS===========================================================#
+
 #GUIDE:
 #   - See: https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-#   - Take the Value column's contents and place it in quotation marks and square brackets. 
-#   - You can place multiple quotation mark surrounded keys separated by commas to represent key combinations.
-#       *(e.g. ["0x31","0x32"] -> Press 1 and 2 at the same time.) Technically the 0x is optional.
+#   - Take the Value column's contents and place it in square brackets. 
+#   - You can place multiple inputs separated by commas into the square brackets to represent input combinations.
+#       *(e.g. [0x31,0x32] -> Press 1 and 2 at the same time.)
+#       *Activating an input combination means pressing one of its inputs while the rest are held down.
+#       *Special inputs such as mouse inputs are probably mutually exclusive.
+#           **(e.g. [0x100,0x01] -> scroll up and left click, this probably won't detect properly. It might. But probably not.)
+#       *Additionally, special inputs usually have to be the last pressed key in practice.
+#   - Make sure to unbind any keys ingame that overlap unless you want the simultaneous commands.
+#       *With the exception of controls that begin with "notify". Those MUST overlap to work properly - set them to match your ingame settings.
 #
 #NOTES:
-#   - Special exceptions will be added where there's no equivalent in the table.
-#       *Currently these are: NOT WORKING
-#           - "Scroll Up"
-#           - "Scroll Down"
+#   - Special exceptions will be added where there's no equivalent in the table. i.e. inputs that are not keys.
+#       *Currently these are:
+#           - 0x100: Scroll Up
+#           - 0x101: Scroll Down
+#           - 0x102: Scroll Left
+#           - 0x103: Scroll Right
+#           - 0x1???: The key 0x??? is a blacklist. If it's held down, the control won't activate.
+#               *(e.g. 0x1031 is when you are not holding 1 down)
+#               *This works as a nice solution to overlapping controls.
 
-#===============================================================================================================#
-#NOTES: You should probably unbind vanilla's next slot control.
-#VERY IMPORTANT NOTE: I haven't figured out how to stop partially overlapping controls like shift+1 and 1 on to_0 and to_10 from breaking.
-#(you can uncomment them and replace them with unique binds just fine though)
-[spell_selector]
+#==============================================================================================================================#
+
+[action_reader]
+
+#NOTES: next actually works even when overlapping with the vanilla binding.
 [spell_selector.controls]
-next = ["Scroll Up"] #CHANGE THIS
-prev = ["Scroll Down"] #CHANGE THIS
-to_0 = ["0x31"]
-to_1 = ["0x32"]
-to_2 = ["0x33"]
-to_3 = ["0x34"]
-to_4 = ["0x35"]
-to_5 = ["0x36"]
-to_6 = ["0x37"]
-to_7 = ["0x38"]
-to_8 = ["0x39"]
-to_9 = ["0x30"]
-#to_10 = ["0x31", "0x10"]
-#to_11 = ["0x32", "0x10"]
-#to_12 = ["0x33", "0x10"]
-#to_13 = ["0x34", "0x10"]
+next = [0x100]
+prev = [0x101]
+to_0 = [0x31, 0x1010]
+to_1 = [0x32, 0x1010]
+to_2 = [0x33, 0x1010]
+to_3 = [0x34, 0x1010]
+to_4 = [0x35]
+to_5 = [0x36]
+to_6 = [0x37]
+to_7 = [0x38]
+to_8 = [0x39]
+to_9 = [0x30]
+to_10 = [0x31, 0x10]
+to_11 = [0x32, 0x10]
+to_12 = [0x33, 0x10]
+to_13 = [0x34, 0x10]
+
+#Don't enable these. They're for debugging currently.
+#notify_mainhand = [0x1]
+#notify_offhand = [0x2]

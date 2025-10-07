@@ -1,7 +1,11 @@
-use std::time::Duration;
+use std::{sync::LazyLock, time::Duration};
 use eldenring::{cs::{CSTaskGroupIndex, CSTaskImp}, fd4::FD4TaskData};
 use eldenring_util::{program::Program, singleton::get_instance, system::wait_for_system_init, task::CSTaskImpExt};
+use crate::settings::Config;
+
 use super::modlist::MOD_LIST;
+
+static CONFIG: LazyLock<Config> = LazyLock::new(||return Config::new("general"));
 
 ///This is what runs when `DllMain` makes its thread
 pub fn entry_point() 
@@ -10,9 +14,7 @@ pub fn entry_point()
         .unwrap_or_else(|error|panic!("SYSTEM INIT WAIT ERROR: {error}"));
 
 
-    for er_mod in MOD_LIST {(er_mod.init)();}
 
-    
     //SAFETY: See get_instance
     let cs_task = unsafe 
     { 
@@ -20,18 +22,33 @@ pub fn entry_point()
             .unwrap_or_else(|error|panic!("FAILED SINGLETON LOOKUP ERROR: {error}"))
             .expect("CSTASKIMP RETURNED NONE?!") 
     };
-    cs_task.run_recurring
-    (
-        move|data: &FD4TaskData| {frame_begin(data);},
-        CSTaskGroupIndex::FrameBegin,
-    );
-    cs_task.run_recurring
-    (
-        move|data: &FD4TaskData| {frame_end(data);},
-        CSTaskGroupIndex::FrameEnd,
-    );
-}
 
+    for er_mod 
+        in MOD_LIST.iter()
+            .filter
+            (|er_mod| 
+                return CONFIG
+                    .deep_query(&["enabled",er_mod.context])
+                    .and_then(|enabled| return enabled.as_bool())
+                    .unwrap_or(true)
+            )
+    {
+        (er_mod.init)();
+        cs_task.run_recurring
+        (
+            |data: &FD4TaskData| {(er_mod.frame_begin)(data);},
+            CSTaskGroupIndex::FrameBegin,
+        );
+        cs_task.run_recurring
+        (
+            |data: &FD4TaskData| {(er_mod.frame_end)(data);},
+            CSTaskGroupIndex::FrameEnd,
+        );
+    }
+}
+//Age old question: In order, or parallel...? Loop cs_task.run_recurrings, or cs_task.run_recurring a loop?
+//I suppose in parallel. Mods should work independently of each other by default.
+/*
 fn frame_begin(data:&FD4TaskData)
 {
     for er_mod in MOD_LIST {(er_mod.frame_begin)(data);}
@@ -41,3 +58,4 @@ fn frame_end(data:&FD4TaskData)
 {
     for er_mod in MOD_LIST {(er_mod.frame_end)(data);}
 }
+*/
