@@ -9,7 +9,8 @@ todo:
 - separate the crate into a workspace consisting of generic (DllMain + Settings, can be reused across games, in /src), Elden Ring (Elden Ring specific code, in src/implementation), and Elden Ring Modlist (Specific Elden Ring mods that make the gameplay changes, in implementation/modlist)
 - some kind of UI element or bringing up the bottom left menu to help with seeing what spell you're on
 - items and weapons selection system next
-
+- Better refresh/update system
+- Figure out if &'static affects performance (I don't know how to use rust (: )
 
 
 ty to people on discord for being patient with me and answering my questions

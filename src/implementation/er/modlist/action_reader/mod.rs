@@ -1,9 +1,11 @@
-use std::thread;
+use std::{sync::LazyLock, thread};
 use rdev::{Button, Event, EventType, listen};
 use tokio::runtime::Runtime;
 use win_key_event::init_custom_key_listener;
 use eldenring::fd4::FD4TaskData;
 use windows::Win32::UI::Input::KeyboardAndMouse::GetAsyncKeyState;
+
+use crate::settings::Config;
 
 use super::ERMod;
 use super::super::utils::get_world_chr_man;
@@ -12,6 +14,8 @@ pub use keybinds::register_bindings;
 use keybinds::{KEYBINDS, KEYBIND_BUFFER};
 mod special_codes;
 use special_codes::{MIDDLE, LEFT, RIGHT, M4, M5, SCROLL_UP, SCROLL_DOWN, SCROLL_RIGHT, SCROLL_LEFT};
+mod action;
+use action::action;
 
 //this implementation is so ugly because win_key_event doesn't support any mouse inputs outside of LMB/RMB, 
 //and rdev doesn't detect keyboard input. So I have to use both.
@@ -26,8 +30,12 @@ pub const MOD: ERMod = ERMod
     init
 };
 const fn frame_end(_data:&FD4TaskData) -> Option<()>{return None;}
-//static CONFIG: LazyLock<Config> = LazyLock::new(||return Config::new(MOD.context));
-fn init(){thread::spawn(input_polling);}
+static CONFIG: LazyLock<Config> = LazyLock::new(||return Config::new(MOD.context));
+fn init()
+{
+    thread::spawn(input_polling);
+    register_bindings(&CONFIG, action);
+}
 fn frame_begin(_data:&FD4TaskData) 
     -> Option<()>
 {
@@ -79,7 +87,7 @@ fn input(key:i32)
                 && keybind.bind.iter()
                     .all(|&input| return is_held(input))
         )
-    {(keybind.callback)(keybind.action);}
+        {#[cfg(debug_assertions)]println!("ACTION: {}",keybind.action);(keybind.callback)(keybind.action);}
 
     return Some(());
 }

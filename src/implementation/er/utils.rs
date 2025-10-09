@@ -1,5 +1,5 @@
 mod constants;
-pub use constants::{get_world_chr_man, get_main_player, equipped_magic};
+pub use constants::*;
 
 mod change;
 pub use change::*;

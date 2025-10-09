@@ -5,6 +5,12 @@
 action_reader = true
 spell_selector = true
 
+[spell_selector]
+#Might lower performance slightly while on. But if it's off you'll need to use the manual_refresh control.
+auto_refresh = true
+#Swaps out your spell if you try to cast the wrong kind of spell.
+no_miscast = true
+
 #===========================================================CONTROLS===========================================================#
 
 #GUIDE:
@@ -34,9 +40,15 @@ spell_selector = true
 
 [action_reader]
 
-#NOTES: next actually works even when overlapping with the vanilla binding.
+[action_reader.controls]
+#Updates where your last and first slots are for looping around. 
+#If you change your spells memorised but don't refresh, some spells may be inaccessible or sometimes you'll end up in empty slots.
+#If auto_refresh is false, make it something you'll press at least once after changing spells memorised, like the binding for going back out of a menu, or rolling.
+manual_refresh = [] 
+debug = []
+
 [spell_selector.controls]
-next = [0x100]
+next = [0x100] #This actually works even with the vanilla binding.
 prev = [0x101]
 to_0 = [0x31, 0x1010]
 to_1 = [0x32, 0x1010]
@@ -52,7 +64,6 @@ to_10 = [0x31, 0x10]
 to_11 = [0x32, 0x10]
 to_12 = [0x33, 0x10]
 to_13 = [0x34, 0x10]
-
-#Don't enable these. They're for debugging currently.
-#notify_mainhand = [0x1]
-#notify_offhand = [0x2]
+#Used by no_miscast.
+notify_mainhand = [0x1]
+notify_offhand = [0x2]

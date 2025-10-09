@@ -3,15 +3,10 @@ use toml::Value;
 use windows::Win32::{Foundation::{HMODULE, MAX_PATH}, System::LibraryLoader::GetModuleFileNameW};
 use std::sync::LazyLock;
 use anyhow::anyhow;
+mod default;
+use default::DEFAULT_SETTINGS_RAW;
 
-const DEFAULT_RAW:&str =
-r#"
-    test = 0
-    default_test = true
-    overwrite_test = "hello!"
-"#;
-
-static DEFAULTS: LazyLock<Value> = LazyLock::new(||return toml::from_str(DEFAULT_RAW).expect("FAILED TO READ DEFAULT CONFIGS"));
+static DEFAULTS: LazyLock<Value> = LazyLock::new(||return toml::from_str(DEFAULT_SETTINGS_RAW).expect("FAILED TO READ DEFAULT CONFIGS"));
 
 unsafe extern "C" {static mut __ImageBase: c_void;}
 static FULL_CONFIG: LazyLock<Value> = LazyLock::new
@@ -92,13 +87,4 @@ impl Config
                 )
             });
     }
-
-    /*/// Name of the Value -> Value from lookup in Config
-    fn shallow_query(&self,name:&str) 
-        -> Option<&Value>
-    {
-        return self.file.as_ref()
-            .and_then(|value|return value.get(name))
-            .or_else(||return self.defaults.as_ref()?.get(name));
-    }*/
 }
