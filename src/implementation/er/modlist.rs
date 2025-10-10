@@ -6,7 +6,7 @@ mod action_reader;
 /// For each mod put it here.
 /// Import it, place its `ERMod` into the array, increase the array size.
 pub const MOD_LIST:[ERMod; 2] = [action_reader::MOD,spell_selector::MOD]; 
-//Maybe a macro can be made to automate the impport->insert->resize process.
+// Maybe a macro can be made to automate the impport->insert->resize process.
 
 /*<==========================================================================>*/
 

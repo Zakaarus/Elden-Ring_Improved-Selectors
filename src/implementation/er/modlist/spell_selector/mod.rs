@@ -4,7 +4,7 @@ use eldenring::fd4::FD4TaskData;
 use super::action_reader::register_bindings;
 use crate::implementation::er::modlist::spell_selector::internal::action;
 use crate::settings::Config;
-use super::super::utils::{get_main_player,change_spell,Magic,MAGICS, refresh_magic, Weapon,WEAPONS, refresh_weapons,MagicType::{self,Sorcery,Incantation,Both,Neither}};
+use super::super::utils::{get_main_player,change_spell};
 use super::ERMod;
 
 mod internal;

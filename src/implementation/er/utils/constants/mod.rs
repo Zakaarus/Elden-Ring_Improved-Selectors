@@ -2,7 +2,7 @@
 //! - chainfailure for examples that showed how to use eldenring-rs's `get_instance` (as well as making the eldenring-rs crate)
 //! - axd1x8a for giving a working param lookup example.
 mod magic;
-pub use magic::{*, MagicType::{Sorcery, Incantation, Neither, Both}};
+pub use magic::*;
 
 mod weapon;
 pub use weapon::*;

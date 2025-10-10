@@ -1,5 +1,5 @@
-use eldenring::cs::{CSFeManImp, PlayerIns};
-use eldenring_util::singleton::get_instance;
+use eldenring::cs::PlayerIns;
+
 use fromsoftware_shared::OwnedPtr;
 
 use super::get_main_player;
@@ -12,9 +12,13 @@ pub fn change_spell(player_option:Option<&mut OwnedPtr<PlayerIns>>,slot:i32)
     return Some(());
 }
 
+#[cfg(debug_assertions)]
+use eldenring_util::singleton::get_instance;
+#[cfg(debug_assertions)]
+use eldenring::cs::CSFeManImp;
 /// Not working. It actually breaks the UI.
 #[cfg(debug_assertions)]
-pub fn show_ui()
+pub fn _show_ui()
     -> Option<()>
 {
     //SAFETY: See get_instance

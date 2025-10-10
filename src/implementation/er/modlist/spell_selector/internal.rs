@@ -1,6 +1,6 @@
 use std::{num::NonZero, sync::atomic::{AtomicBool, AtomicI32, Ordering}};
 
-use super::{Magic, Weapon, SETTINGS, WEAPONS, refresh_weapons, MAGICS, refresh_magic,MagicType::{self, Both, Incantation, Neither, Sorcery}};
+use super::{SETTINGS, super::super::utils::{MAGICS, refresh_magic}};
 
 mod no_miscast;
 use no_miscast::{notify_hand, hand};
@@ -57,11 +57,12 @@ fn bound_slot(raw_slot:i32)
     -> Option<i32>
 {
     if SETTINGS.auto_refresh {refresh_magic();}
-    let len:NonZero<i32> = NonZero::new(MAGICS.1.load(Ordering::Relaxed))?;
+    let len:i32 = NonZero::new(MAGICS.1.load(Ordering::Relaxed))?.get();
+    if len==0_i32 {return None;}
     return Some
     (
-        if raw_slot < 0 {len.get()-1}
-        else {raw_slot%len.get()}
+        if raw_slot < 0 {len-1}
+        else {raw_slot%len}
     );
 }
 

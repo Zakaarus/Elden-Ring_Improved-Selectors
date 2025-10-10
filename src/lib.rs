@@ -1,10 +1,10 @@
 //!Elden Ring mod for reworking the item/spell/weapon selection controls.
 
-///Dllmain is where the C externs for running DLLs are defined. 
+/// Dllmain is where the C externs for running DLLs are defined. 
 mod DllMain;
-///implementation is where the effects of the DLL are defined.
+/// implementation is where the effects of the DLL are defined.
 mod implementation;
 use implementation::entry_point;
 use implementation::panic_hook;
-///settings is where settings are kept
+/// settings is where settings are kept
 mod settings;

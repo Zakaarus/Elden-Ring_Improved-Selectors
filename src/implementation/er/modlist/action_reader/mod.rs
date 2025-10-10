@@ -93,7 +93,7 @@ fn input(key:i32)
 }
 
 fn key_down_callback(key:i32){input(key);}
-const fn key_up_callback(_key:i32){/*input(key+0x1000);*/}
+const fn key_up_callback(_key:i32){}
 #[expect(clippy::needless_pass_by_value, reason = "listen arg requires PBV parameter")]
 fn rdev_callback(event:Event)
 {

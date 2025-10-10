@@ -1,5 +1,6 @@
 use crate::implementation::er::utils::refresh_all;
 
+#[flux_rs::trusted] //No string comparison compatibility. That being said I should use a phf. Thanks flux!
 pub fn action(action:&str)
 {
     match action

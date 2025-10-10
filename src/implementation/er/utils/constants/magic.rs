@@ -54,7 +54,7 @@ pub fn refresh_magic()
     -> Option<()>
 {
     let init = init_magic();
-    *MAGICS.0.try_lock().ok()?=init.0;
+    *MAGICS.0.lock().ok()?=init.0;
     MAGICS.1.store(init.1, Ordering::Relaxed);
     return Some(());
 }

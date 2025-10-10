@@ -1,15 +1,13 @@
 use std::{num::NonZero, sync::{LazyLock, Mutex, atomic::Ordering}, thread};
 
-use super::{SETTINGS, MAGIC_SLOTS, bound_slot, end_slot, temp_slot, MAGICS, MagicType::{self, Both, Incantation, Neither, Sorcery}, WEAPONS, refresh_weapons};
+use crate::implementation::er::utils::{MagicType::{self, Both, Incantation, Neither, Sorcery}, WEAPONS, refresh_weapons};
 
+use super::{SETTINGS, MAGIC_SLOTS, bound_slot, end_slot, temp_slot, MAGICS};
 
 pub mod hand 
 {
     pub const LEFT:i32 = 0;
     pub const RIGHT:i32 = 1;
-    /*pub const PRIMARY:i32 = 0;
-    pub const SECONDARY:i32 = 2;
-    pub const TERTIARY:i32 = 4;*/
 }
 
 pub fn notify_hand(hand:i32)
@@ -26,7 +24,7 @@ pub fn notify_hand(hand:i32)
             _=>panic!("INCORRECT SELECTED WEAPON ARGUMENT?")
         };
     drop(weapons);
-    
+
     let persist:NonZero<usize> =
         NonZero::<usize>::new
         (
@@ -38,7 +36,7 @@ pub fn notify_hand(hand:i32)
             .ok()?
         )?;
     #[expect(clippy::indexing_slicing, reason = "persist is bounded.")]
-    let slot_type = &MAGICS.0.lock().ok()?[persist.get()].magic_type;
+    let slot_type = MAGICS.0.lock().ok()?[persist.get()].magic_type;
     match (notify,off,slot_type)
     {
         (Sorcery,Both|Incantation,Incantation)
@@ -74,7 +72,7 @@ fn refresh_split_magic()
     -> Option<()>
 {
     let new_sm = init_split_magic();
-    *SPLIT_MAGIC.try_lock().ok()?=new_sm;
+    *SPLIT_MAGIC.lock().ok()?=new_sm;
     return Some(());
 }
 fn init_split_magic()
@@ -82,22 +80,25 @@ fn init_split_magic()
 {
     let magics = 
         loop 
-        {
-            if let Ok(guard) = MAGICS.0.lock() 
-                {break guard;}
-            MAGICS.0.clear_poison();
-            #[cfg(debug_assertions)]println!("RETRYING NAGICS");
-            thread::yield_now();
+        { 
+            if let Ok(magics) = MAGICS.0.lock() 
+                {break magics;} 
+            #[cfg(debug_assertions)]println!("RETRYING NAGICS"); 
+            MAGICS.0.clear_poison(); 
+            thread::yield_now(); 
         };
     let (sorceries,incantations) = magics.iter().enumerate()
         .fold
-        ((Vec::new(),Vec::new()),|(mut sorceries,mut incantations),(i,magic)|{
-            if matches!(magic.magic_type,Sorcery)
-                {sorceries.push(i);}
-            if matches!(magic.magic_type,Incantation)
-                {incantations.push(i);}
-            return (sorceries,incantations);
-        });
+        (
+            (Vec::new(),Vec::new()),
+            |(mut sorceries,mut incantations),(i,magic)|{
+                if matches!(magic.magic_type,Sorcery)
+                    {sorceries.push(i);}
+                if matches!(magic.magic_type,Incantation)
+                    {incantations.push(i);}
+                return (sorceries,incantations);
+            }
+        );
     drop(magics);
 
     let mut pairs = sorceries.iter().copied()
@@ -108,7 +109,7 @@ fn init_split_magic()
                 .zip(sorceries.iter().copied().cycle())
         )
         .collect::<Vec<(usize,usize)>>();
-    pairs.sort_by_cached_key(|&(i,_)|return i);
+    pairs.sort_by_key(|&(i,_)|return i);
     return pairs.iter()
         .map(|&(_,redir)|return redir)
         .collect();
@@ -119,6 +120,7 @@ static SPLIT_MAGIC:LazyLock<Mutex<Vec<usize>>> = LazyLock::new(||{return Mutex::
 fn miscast_intentional()
     -> Option<()>
 {
+    #[cfg(debug_assertions)]println!("INTENTIONAL");
     refresh_split_magic();
     let target_slot = *SPLIT_MAGIC.lock().ok()?
         .get::<usize>
@@ -131,9 +133,11 @@ fn miscast_intentional()
     println!("{} -> {target_slot}",end_slot());
     return Some(());
 }
-fn miscast_unintentional(slot_type:&MagicType)
+
+const fn miscast_unintentional(_slot_type:MagicType)
     -> Option<()>
 {
+    //#[cfg(debug_assertions)]println!("UNINTENTIONAL");
     return None;
-    return Some(());
+    //return Some(());
 }

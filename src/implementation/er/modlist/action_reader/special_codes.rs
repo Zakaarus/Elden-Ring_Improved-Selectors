@@ -1,8 +1,8 @@
-//There's a mismatch between VK code sources. Note the lack of entries for 0x04-0x06 for the second one.
-//https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-//https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-tvtt/261ddfb0-ce10-4380-9b7a-4b50f482b8ec
-//These will be added in manually.
-//left/right are added because they're covered by rdev which catches them slightly faster than win_key_event.
+//! There's a mismatch between VK code sources. Note the lack of entries for 0x04-0x06 for the second one.
+//! <https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes>
+//! <https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-tvtt/261ddfb0-ce10-4380-9b7a-4b50f482b8ec>
+//! These will be added in manually.
+//! left/right are added because they're covered by rdev which catches them slightly faster than `win_key_event`.
 pub const LEFT:i32 = 0x01;
 pub const RIGHT:i32 = 0x02;
 pub const MIDDLE:i32 = 0x04;
