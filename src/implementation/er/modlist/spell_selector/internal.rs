@@ -75,8 +75,8 @@ pub fn action(action:&str)
 {
     match action
     {
-        "notify_mainhand" => {notify_hand(hand::RIGHT);},
-        "notify_offhand" => {notify_hand(hand::LEFT);},
+        "notify_righthand" => {notify_hand(hand::RIGHT);},
+        "notify_lefthand" => {notify_hand(hand::LEFT);},
         "next" => {to_slot(end_slot()+1);},
         "prev" => {to_slot(end_slot()-1);},
         _ => 

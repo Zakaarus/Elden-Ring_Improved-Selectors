@@ -1,8 +1,8 @@
-use std::{num::NonZero, sync::{LazyLock, Mutex, atomic::Ordering}, thread};
+use std::{sync::{LazyLock, Mutex, atomic::Ordering}, thread};
 
 use crate::implementation::er::utils::{MagicType::{self, Both, Incantation, Neither, Sorcery}, WEAPONS, refresh_weapons};
 
-use super::{SETTINGS, MAGIC_SLOTS, bound_slot, end_slot, temp_slot, MAGICS};
+use super::{SETTINGS, MAGIC_SLOTS, end_slot, temp_slot, MAGICS};
 
 pub mod hand 
 {
@@ -25,18 +25,10 @@ pub fn notify_hand(hand:i32)
         };
     drop(weapons);
 
-    let persist:NonZero<usize> =
-        NonZero::<usize>::new
-        (
-            TryInto::<usize>::try_into
-            (
-                bound_slot
-                    (MAGIC_SLOTS.persist.load(Ordering::Relaxed))?
-            )
-            .ok()?
-        )?;
+    let persist:usize = MAGIC_SLOTS.persist.load(Ordering::Relaxed)
+        .try_into().ok()?;
     #[expect(clippy::indexing_slicing, reason = "persist is bounded.")]
-    let slot_type = MAGICS.0.lock().ok()?[persist.get()].magic_type;
+    let slot_type = MAGICS.0.lock().ok()?[persist].magic_type;
     match (notify,off,slot_type)
     {
         (Sorcery,Both|Incantation,Incantation)
@@ -46,6 +38,7 @@ pub fn notify_hand(hand:i32)
             //Swap spell to a compatible one. 
             //This gives staff-seal the ability to have two spells selected.
             //Don't think there's a need for fallback here.
+            #[cfg(debug_assertions)] println!("INTENTIONAL");
             miscast_intentional();
         }
 
@@ -56,6 +49,7 @@ pub fn notify_hand(hand:i32)
             //Swap weapon to a right one.
             //This ensures the spell you are casting always goes through.
             //Then fallback to previous if none of the 3 weapons work.
+            #[cfg(debug_assertions)] println!("UNINTENTIONAL");
             miscast_unintentional(slot_type)
                 .or_else(miscast_intentional);
         }
@@ -63,7 +57,11 @@ pub fn notify_hand(hand:i32)
         (Sorcery,_,Sorcery) 
             | (Incantation,_,Incantation)
             | (Neither|Both,_,_)
-            | (_,_,Neither|Both) => {} //Match or not trying to cast a spell. Do nothing.
+            | (_,_,Neither|Both) => 
+        {
+            //Match or not trying to cast a spell. Do nothing.
+            #[cfg(debug_assertions)] println!("MATCH / NON SPELL");
+        } 
     }
     return Some(());
 }
@@ -72,6 +70,7 @@ fn refresh_split_magic()
     -> Option<()>
 {
     let new_sm = init_split_magic();
+    #[cfg(debug_assertions)] println!("{new_sm:?}");
     *SPLIT_MAGIC.lock().ok()?=new_sm;
     return Some(());
 }
@@ -83,7 +82,7 @@ fn init_split_magic()
         { 
             if let Ok(magics) = MAGICS.0.lock() 
                 {break magics;} 
-            #[cfg(debug_assertions)]println!("RETRYING NAGICS"); 
+            println!("RETRYING NAGICS"); 
             MAGICS.0.clear_poison(); 
             thread::yield_now(); 
         };
@@ -120,7 +119,6 @@ static SPLIT_MAGIC:LazyLock<Mutex<Vec<usize>>> = LazyLock::new(||{return Mutex::
 fn miscast_intentional()
     -> Option<()>
 {
-    #[cfg(debug_assertions)]println!("INTENTIONAL");
     refresh_split_magic();
     let target_slot = *SPLIT_MAGIC.lock().ok()?
         .get::<usize>
@@ -137,7 +135,6 @@ fn miscast_intentional()
 const fn miscast_unintentional(_slot_type:MagicType)
     -> Option<()>
 {
-    //#[cfg(debug_assertions)]println!("UNINTENTIONAL");
     return None;
     //return Some(());
 }

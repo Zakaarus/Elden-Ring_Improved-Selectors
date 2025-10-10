@@ -65,5 +65,5 @@ to_11 = [0x32, 0x10]
 to_12 = [0x33, 0x10]
 to_13 = [0x34, 0x10]
 #Used by no_miscast.
-notify_mainhand = [0x1]
-notify_offhand = [0x2]
+notify_righthand = [0x1]
+notify_lefthand = [0x2]

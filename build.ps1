@@ -13,7 +13,7 @@ cargo build --release *>> ./build.log
 echo "Packing files..."
 Move-Item -Path "./target/release/elden_ring_improved_selectors.dll" -Destination "./OUTPUT/er_IS.dll" -Force
 cd "./OUTPUT"
-7z a -t7z "./er_IS_release.7z" "./er_IS.dll" "./config.toml" -y
+7z a -t7z "./er_IS_release.7z" "./er_IS.dll" "./config.toml" -y *>> ../build.log
 cd "../"
 echo "Done. See ./build.log for details."
 Pause
