@@ -9,7 +9,7 @@ use crate::attempt;
 pub fn change_spell(player_option:Option<&mut OwnedPtr<PlayerIns>>,slot:i32)
 {
     attempt!
-    {
+    {("Change Spell Function")
         let player = player_option
             .ok_or_else(||return anyhow!("(This error should be impossible)"))
             .or_else(|_|return get_main_player())?;
@@ -27,12 +27,12 @@ pub fn _show_ui()
 
     
     attempt!
-    {
+    {("Show UI Function")
         //SAFETY: See get_instance
         unsafe 
         {
             let fe_man_imp = get_instance::<CSFeManImp>()?
-                .ok_or_else(||return anyhow!("No Fe Man Imp found"))?;
+                .ok_or_else(||return anyhow!("Fe Man Imp not found."))?;
             fe_man_imp.enable_hud = !fe_man_imp.enable_hud;
         }
     };

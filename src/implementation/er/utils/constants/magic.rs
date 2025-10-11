@@ -1,6 +1,6 @@
 use std::{num::TryFromIntError, sync::{LazyLock, Mutex, atomic::{AtomicI32, Ordering}}};
 use MagicType::{Sorcery, Incantation, Neither};
-use anyhow::{Error, anyhow};
+use anyhow::{Result, anyhow};
 use eldenring::{fd4::FD4ParamRepository, param::MAGIC_PARAM_ST};
 
 use crate::{attempt, implementation::handle_error};
@@ -19,7 +19,7 @@ pub fn equipped_magic()
                 (|entry| 
                     return magic_lookup(entry.param_id,None)
                         .inspect_err
-                            (|error|{handle_error::<Magic>(Err(anyhow!(error.to_string())), &[]);})
+                            (|error|{handle_error::<Magic>(Err(anyhow!(error.to_string())), "Equipped Magic Function - Magic Lookup", &["ID Can't be negative."]);})
                         .ok()
                 )
                 .collect::<Vec<Magic>>()
@@ -27,15 +27,15 @@ pub fn equipped_magic()
         .unwrap_or_default();
 }
 
-/// Credits to axd1x8a on the `?ServerName?` discord for telling me how to access item params!
 pub fn magic_lookup(id: i32, fd4pr_option:Option<&'static mut FD4ParamRepository>)
-    -> Result<Magic, Error>
+    -> Result<Magic>
 {
+    if id < 0 {return Err(anyhow!("ID Can't be negative."));}
     let param:&MAGIC_PARAM_ST = fd4pr_option
         .ok_or_else(||return anyhow!("(This error should be impossible)"))
         .or_else(|_|return get_fd4pr())?
         .get(id.try_into()?)
-        .ok_or_else(||return anyhow!("Magic not found"))?;
+        .ok_or_else(||return anyhow!("Magic not found."))?;
     return Ok
     (
         Magic
@@ -65,7 +65,7 @@ pub static MAGICS:LazyLock<(Mutex<Vec<Magic>>,AtomicI32)> = LazyLock::new
 pub fn refresh_magic()   
 {
     attempt!
-    {
+    {("Magic Refresh")
         let init = init_magic();
         *MAGICS.0.lock()
             .map_err(|_error| return anyhow!("Magic Mutex Poisoned"))?
@@ -80,7 +80,7 @@ fn init_magic()
     let len = magic_vec.len()
         .try_into()
         .inspect_err
-            (|error:&TryFromIntError|{handle_error::<()>(Err(anyhow!(error.to_string())), &[]);})
+            (|error:&TryFromIntError|{handle_error::<()>(Err(anyhow!(error.to_string())), "Init Magic Function",&[]);})
         .unwrap_or_default();
     #[cfg(debug_assertions)]
         for magic in &magic_vec

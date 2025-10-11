@@ -20,7 +20,7 @@ pub fn get_main_player()
     return get_world_chr_man()?
         .main_player
         .as_mut()
-        .ok_or_else(||return anyhow!("Main player not found."));
+        .ok_or_else(||return anyhow!("Main Player not found."));
 }
 
 pub fn get_fd4pr() //I've tried using a type arg but it claims to fail the invariant no matter how I annotate it.

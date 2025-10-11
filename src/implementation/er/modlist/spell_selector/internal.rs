@@ -98,7 +98,7 @@ pub fn action(action:&str)
                 .and_then
                 (|slot|return slot.parse::<i32>()
                     .inspect_err
-                        (|error|{let _:Option<()> = handle_error(Err(anyhow!(error.to_string())), &[]);})
+                        (|error|{let _:Option<()> = handle_error(Err(anyhow!(error.to_string())), "to_slot Action", &[]);})
                     .ok()
                 ) 
                 {to_slot(slot);}

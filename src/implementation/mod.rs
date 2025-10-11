@@ -1,5 +1,5 @@
 mod er;
-use anyhow::{Error, Result};
+use anyhow::Result;
 pub use er::entry_point;
 
 use std::panic::PanicHookInfo;
@@ -20,30 +20,39 @@ pub fn panic_hook(error: &PanicHookInfo)
 #[macro_export] 
 macro_rules! attempt
 {
-    {[$($ignore:expr),*] $($function:tt)*}=>
+    {[$($ignore:expr),*] ($($context:expr)*) $($function:tt)*}=>
     {{
         let attempt_result = 
         (|| -> anyhow::Result<()>{
             $($function)*
             return Ok(());
         })();
-        //let processed_result:Result<(),&anyhow::Error>= attempt_result.as_ref().map(|_|());
-        $crate::implementation::handle_error::<()>(attempt_result,&[$($ignore),*]);
+        $crate::implementation::handle_error::<()>
+        (
+            attempt_result,
+            $($context)*,
+            &[$($ignore),*]
+        );
     }};
     
-    {$($function:tt)*} => 
+    {($($context:expr)*) $($function:tt)*} => 
     {{
         let attempt_result = 
         (|| -> anyhow::Result<()> {
                 $($function)*
                 return Ok(());
         })();
-        $crate::implementation::handle_error::<()>(attempt_result,&[]);
+        $crate::implementation::handle_error::<()>
+        (
+            attempt_result,
+            $($context)*,
+            &[]
+        );
     }};
 }
 
 /// Custom error handling implementation
-pub fn handle_error<T>(result:Result<T, Error>,ignore:&[&str])
+pub fn handle_error<T>(result:Result<T>,context:&str,ignore:&[&str])
     -> Option<T>
 {
     match result 
@@ -52,7 +61,7 @@ pub fn handle_error<T>(result:Result<T, Error>,ignore:&[&str])
         Err(error) => {
             if !ignore.contains(&AsRef::<str>::as_ref(&error.to_string()))
             {
-                println!("{error}");
+                println!("{context}: {error:#}");
             }
             return None;
         }

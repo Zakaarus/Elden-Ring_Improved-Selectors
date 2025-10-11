@@ -1,7 +1,7 @@
 [package]
 name = "elden-ring_improved-selectors"
 description = "Reworked item, spell and weapon selection systems for Elden Ring."
-version = "3.1.0"
+version = "3.2.0"
 edition = "2024"
 license = "MIT" #TBD
 repository = "https://github.com/Zakaarus/Elden-Ring_Improved-Selectors"

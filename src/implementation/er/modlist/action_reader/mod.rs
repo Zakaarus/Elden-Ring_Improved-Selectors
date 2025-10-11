@@ -39,7 +39,7 @@ fn init()
 fn frame_begin(_data:&FD4TaskData) 
 {
     attempt!
-    {
+    {["World Chr Man not found."] ("Action Reader Frame Begin")
         get_world_chr_man()?; //Once in the world, finalise the keybinds.
         KEYBINDS.get_or_init
         (||{

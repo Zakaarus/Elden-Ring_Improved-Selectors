@@ -35,7 +35,7 @@ pub fn register_bindings(config:&'static Config, callback:fn(&str))
                                         return input.as_integer()?
                                             .try_into()
                                             .inspect_err
-                                                (|error:&TryFromIntError|{handle_error::<()>(Err(anyhow!(error.to_string())), &[]);})
+                                                (|error:&TryFromIntError|{handle_error::<()>(Err(anyhow!(error.to_string())), "Binding Registry",&[]);})
                                             .ok()
                                     )
                                     .collect::<Vec<i32>>()

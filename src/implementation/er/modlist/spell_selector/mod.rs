@@ -50,7 +50,7 @@ fn init(){register_bindings(&CONFIG, action);}
 fn frame_begin(_data:&FD4TaskData)
 {
     attempt!
-    {["no begin slot"]
+    {["no begin slot", "World Chr Man not found.", "Main Player not found."] ("Spell Selector Frame Begin")
         change_spell(Some(get_main_player()?),begin_slot()
             .ok_or_else(||return anyhow!("no begin slot"))?);
     };
@@ -59,7 +59,7 @@ fn frame_begin(_data:&FD4TaskData)
 fn frame_end(_data:&FD4TaskData)
 {
     attempt!
-    {
+    {["World Chr Man not found.", "Main Player not found."] ("Spell Selector Frame End")
         change_spell(Some(get_main_player()?),end_slot());
     };
 }

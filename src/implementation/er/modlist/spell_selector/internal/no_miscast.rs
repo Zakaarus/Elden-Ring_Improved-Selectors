@@ -1,4 +1,4 @@
-use std::{sync::{LazyLock, Mutex, atomic::Ordering}, thread};
+use std::{sync::{LazyLock, Mutex, atomic::Ordering}, thread, time::Duration};
 
 use anyhow::anyhow;
 
@@ -15,7 +15,7 @@ pub mod hand
 pub fn notify_hand(hand:i32)
 {
     attempt!
-    {["Off"]
+    {["Off"] ("Hand Notify")
         if !SETTINGS.no_miscast {return Err(anyhow!("Off"));}
         if SETTINGS.auto_refresh {refresh_weapons();}
         let weapons = WEAPONS.lock()
@@ -76,7 +76,7 @@ pub fn notify_hand(hand:i32)
 fn refresh_split_magic()
 {
     attempt! 
-    {["err"]
+    {["err"] ("Split Magic Refresh")
         let new_sm = init_split_magic();
         #[cfg(debug_assertions)] println!("{new_sm:?}");
         *SPLIT_MAGIC.lock()
@@ -90,11 +90,11 @@ fn init_split_magic()
     let magics = 
         loop 
         { 
-            if let Ok(magics) = MAGICS.0.lock() 
+            if let Ok(magics) = MAGICS.0.try_lock() 
                 {break magics;} 
             println!("RETRYING NAGICS"); 
             MAGICS.0.clear_poison(); 
-            thread::yield_now(); 
+            thread::sleep(Duration::from_secs(5)); 
         };
     let (sorceries,incantations) = magics.iter().enumerate()
         .fold
@@ -129,7 +129,7 @@ static SPLIT_MAGIC:LazyLock<Mutex<Vec<usize>>> = LazyLock::new(||{return Mutex::
 fn miscast_intentional()
 {
     attempt!
-    {
+    {("Intentional Miscast")
         refresh_split_magic();
         let target_slot = *SPLIT_MAGIC.lock()
             .map_err(|_error| return anyhow!("Split Magic Mutex Poisoned"))?
@@ -148,7 +148,7 @@ fn miscast_intentional()
 fn miscast_unintentional(_slot_type:MagicType)
 {
     attempt!
-    {["unintentional unimplemented"]
+    {["unintentional unimplemented"] ("Unintentional Miscast")
         return Err(anyhow!("unintentional unimplemented"));
         #[expect(unreachable_code,reason = "Early return for testing")]
     }
