@@ -1,6 +1,9 @@
-use std::sync::{LazyLock, Mutex, atomic::{AtomicI32, Ordering}};
+use std::{num::TryFromIntError, sync::{LazyLock, Mutex, atomic::{AtomicI32, Ordering}}};
 use MagicType::{Sorcery, Incantation, Neither};
+use anyhow::{Result, anyhow};
 use eldenring::{fd4::FD4ParamRepository, param::MAGIC_PARAM_ST};
+
+use crate::{attempt, implementation::handle_error};
 
 use super::{get_fd4pr, get_main_player,};
 
@@ -12,19 +15,28 @@ pub fn equipped_magic()
         (|player|
             return player.player_game_data.equipment.equip_magic_data.entries
                 .iter()
-                .filter_map(|entry| return magic_lookup(entry.param_id,None))
+                .filter_map
+                (|entry| 
+                    return magic_lookup(entry.param_id,None)
+                        .inspect_err
+                            (|error|{handle_error::<Magic>(Err(anyhow!(error.to_string())), "Equipped Magic Function - Magic Lookup", &["ID Can't be negative."]);})
+                        .ok()
+                )
                 .collect::<Vec<Magic>>()
         )
         .unwrap_or_default();
 }
 
-/// Credits to axd1x8a on the `?ServerName?` discord for telling me how to access item params!
 pub fn magic_lookup(id: i32, fd4pr_option:Option<&'static mut FD4ParamRepository>)
-    -> Option<Magic>
+    -> Result<Magic>
 {
-    let param:&MAGIC_PARAM_ST = fd4pr_option.or_else(get_fd4pr)?
-        .get(id.try_into().ok()?)?;
-    return Some
+    if id < 0 {return Err(anyhow!("ID Can't be negative."));}
+    let param:&MAGIC_PARAM_ST = fd4pr_option
+        .ok_or_else(||return anyhow!("(This error should be impossible)"))
+        .or_else(|_|return get_fd4pr())?
+        .get(id.try_into()?)
+        .ok_or_else(||return anyhow!("Magic not found."))?;
+    return Ok
     (
         Magic
         {
@@ -50,13 +62,16 @@ pub static MAGICS:LazyLock<(Mutex<Vec<Magic>>,AtomicI32)> = LazyLock::new
     );
 });
 
-pub fn refresh_magic()
-    -> Option<()>
+pub fn refresh_magic()   
 {
-    let init = init_magic();
-    *MAGICS.0.lock().ok()?=init.0;
-    MAGICS.1.store(init.1, Ordering::Relaxed);
-    return Some(());
+    attempt!
+    {("Magic Refresh")
+        let init = init_magic();
+        *MAGICS.0.lock()
+            .map_err(|_error| return anyhow!("Magic Mutex Poisoned"))?
+            =init.0;
+        MAGICS.1.store(init.1, Ordering::Relaxed);
+    };
 }
 fn init_magic()
     -> (Vec<Magic>,i32)
@@ -64,6 +79,8 @@ fn init_magic()
     let magic_vec = equipped_magic();
     let len = magic_vec.len()
         .try_into()
+        .inspect_err
+            (|error:&TryFromIntError|{handle_error::<()>(Err(anyhow!(error.to_string())), "Init Magic Function",&[]);})
         .unwrap_or_default();
     #[cfg(debug_assertions)]
         for magic in &magic_vec

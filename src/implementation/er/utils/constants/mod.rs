@@ -15,4 +15,3 @@ pub fn refresh_all()
     refresh_magic();
     refresh_weapons();
 }
-

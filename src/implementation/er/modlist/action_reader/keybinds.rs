@@ -1,6 +1,7 @@
-use std::sync::{LazyLock, Mutex, OnceLock};
+use std::{num::TryFromIntError, sync::{LazyLock, Mutex, OnceLock}};
+use anyhow::anyhow;
 
-use crate::settings::Config;
+use crate::{implementation::handle_error, settings::Config};
 
 pub static KEYBIND_BUFFER: LazyLock<Mutex<Vec<Keybind>>> = LazyLock::new(|| return Mutex::new(Vec::new()));
 pub static KEYBINDS: OnceLock<Vec<Keybind>> = OnceLock::new();
@@ -29,7 +30,14 @@ pub fn register_bindings(config:&'static Config, callback:fn(&str))
                             .map
                             (|bind_exists| 
                                 return bind_exists.iter()
-                                    .filter_map(|input| return input.as_integer()?.try_into().ok())
+                                    .filter_map
+                                    (|input| 
+                                        return input.as_integer()?
+                                            .try_into()
+                                            .inspect_err
+                                                (|error:&TryFromIntError|{handle_error::<()>(Err(anyhow!(error.to_string())), "Binding Registry",&[]);})
+                                            .ok()
+                                    )
                                     .collect::<Vec<i32>>()
                             )
                             .unwrap_or_default(),
