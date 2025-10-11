@@ -5,7 +5,7 @@ use win_key_event::init_custom_key_listener;
 use eldenring::fd4::FD4TaskData;
 use windows::Win32::UI::Input::KeyboardAndMouse::GetAsyncKeyState;
 
-use crate::settings::Config;
+use crate::{attempt, settings::Config};
 
 use super::ERMod;
 use super::super::utils::get_world_chr_man;
@@ -29,7 +29,7 @@ pub const MOD: ERMod = ERMod
     frame_end,
     init
 };
-const fn frame_end(_data:&FD4TaskData) -> Option<()>{return None;}
+const fn frame_end(_data:&FD4TaskData){}
 static CONFIG: LazyLock<Config> = LazyLock::new(||return Config::new(MOD.context));
 fn init()
 {
@@ -37,19 +37,20 @@ fn init()
     register_bindings(&CONFIG, action);
 }
 fn frame_begin(_data:&FD4TaskData) 
-    -> Option<()>
 {
-    get_world_chr_man()?; //Once in the world, finalise the keybinds.
-    KEYBINDS.get_or_init
-    (||{
-        let mut buffer = KEYBIND_BUFFER.lock()
-            .unwrap_or_else(|error|panic!("MUTEX LOCK ERROR?!: {error:#?}"));
-        let keybinds = buffer.clone();
-        buffer.clear();
-        drop(buffer);
-        return keybinds;
-    });
-    return None;
+    attempt!
+    {
+        get_world_chr_man()?; //Once in the world, finalise the keybinds.
+        KEYBINDS.get_or_init
+        (||{
+            let mut buffer = KEYBIND_BUFFER.lock()
+                .unwrap_or_else(|error|panic!("MUTEX LOCK ERROR?!: {error:#?}"));
+            let keybinds = buffer.clone();
+            buffer.clear();
+            drop(buffer);
+            return keybinds;
+        });
+    };
 }
 
 /* <=====================================================================================================================================> */
@@ -77,19 +78,23 @@ fn input_polling()
 /* <=====================================================================================================================================> */
 
 fn input(key:i32)
-    -> Option<()>
 {
-    let keybinds = KEYBINDS.get()?;
-    for keybind in keybinds.iter()
-        .filter
-        (|keybind| 
-            return keybind.bind.contains(&key) 
-                && keybind.bind.iter()
-                    .all(|&input| return is_held(input))
-        )
-        {#[cfg(debug_assertions)]println!("ACTION: {}",keybind.action);(keybind.callback)(keybind.action);}
+    attempt(key);
+    fn attempt(key:i32)
+        -> Option<()>
+    {
+        let keybinds = KEYBINDS.get()?;
+        for keybind in keybinds.iter()
+            .filter
+            (|keybind| 
+                return keybind.bind.contains(&key) 
+                    && keybind.bind.iter()
+                        .all(|&input| return is_held(input))
+            )
+            {#[cfg(debug_assertions)]println!("ACTION: {}",keybind.action);(keybind.callback)(keybind.action);}
 
-    return Some(());
+        return Some(());
+    }
 }
 
 fn key_down_callback(key:i32){input(key);}

@@ -1,6 +1,8 @@
 use std::{sync::{LazyLock, Mutex, atomic::Ordering}, thread};
 
-use crate::implementation::er::utils::{MagicType::{self, Both, Incantation, Neither, Sorcery}, WEAPONS, refresh_weapons};
+use anyhow::anyhow;
+
+use crate::{attempt, implementation::{er::utils::{MagicType::{self, Both, Incantation, Neither, Sorcery}, WEAPONS, refresh_weapons}}};
 
 use super::{SETTINGS, MAGIC_SLOTS, end_slot, temp_slot, MAGICS};
 
@@ -11,68 +13,76 @@ pub mod hand
 }
 
 pub fn notify_hand(hand:i32)
-    -> Option<()>
 {
-    if !SETTINGS.no_miscast {return None;}
-    if SETTINGS.auto_refresh {refresh_weapons();}
-    let weapons = WEAPONS.lock().ok()?;
-    let (off,notify):(MagicType,MagicType) =
-        match hand
-        {
-            hand::LEFT => (weapons.right.0.magic_type,weapons.left.0.magic_type),
-            hand::RIGHT => (weapons.left.0.magic_type,weapons.right.0.magic_type),
-            _=>panic!("INCORRECT SELECTED WEAPON ARGUMENT?")
-        };
-    drop(weapons);
+    attempt!
+    {["Off"]
+        if !SETTINGS.no_miscast {return Err(anyhow!("Off"));}
+        if SETTINGS.auto_refresh {refresh_weapons();}
+        let weapons = WEAPONS.lock()
+            .map_err(|_error|return anyhow!("Weapons Mutex Poisoned"))?;
+        let (off,notify):(MagicType,MagicType) =
+            match hand
+            {
+                hand::LEFT => (weapons.right.0.magic_type,weapons.left.0.magic_type),
+                hand::RIGHT => (weapons.left.0.magic_type,weapons.right.0.magic_type),
+                _=> return Err(anyhow!("INCORRECT SELECTED WEAPON ARGUMENT?"))
+            };
+        drop(weapons);
 
-    let persist:usize = MAGIC_SLOTS.persist.load(Ordering::Relaxed)
-        .try_into().ok()?;
-    #[expect(clippy::indexing_slicing, reason = "persist is bounded.")]
-    let slot_type = MAGICS.0.lock().ok()?[persist].magic_type;
-    match (notify,off,slot_type)
-    {
-        (Sorcery,Both|Incantation,Incantation)
-            | (Incantation,Both|Sorcery,Sorcery) =>
+        let persist:usize = MAGIC_SLOTS.persist.load(Ordering::Relaxed)
+            .try_into()?;
+        #[expect(clippy::indexing_slicing, reason = "persist is bounded.")]
+        let slot_type = MAGICS.0.lock()
+            .map(|magic_vec|return magic_vec[persist].magic_type)
+            .map_err(|_error|return anyhow!("Weapons Mutex Poisoned"))?;
+        match (notify,off,slot_type)
         {
-            //Mismatch. Offhand does compensate - so it is intentional.
-            //Swap spell to a compatible one. 
-            //This gives staff-seal the ability to have two spells selected.
-            //Don't think there's a need for fallback here.
-            #[cfg(debug_assertions)] println!("INTENTIONAL");
-            miscast_intentional();
+            (Sorcery,Both|Incantation,Incantation)
+                | (Incantation,Both|Sorcery,Sorcery) =>
+            {
+                //Mismatch. Offhand does compensate - so it is intentional.
+                //Swap spell to a compatible one. 
+                //This gives staff-seal the ability to have two spells selected.
+                //Don't think there's a need for fallback here.
+                #[cfg(debug_assertions)] println!("INTENTIONAL");
+                miscast_intentional();
+            }
+
+            (Sorcery,Neither|Sorcery,Incantation) 
+                | (Incantation,Neither|Incantation,Sorcery) => 
+            {
+                //Mismatch. Offhand does not compensate - so it is unintentional.
+                //Swap weapon to a right one.
+                //This ensures the spell you are casting always goes through.
+                //Then fallback to previous if none of the 3 weapons work.
+                #[cfg(debug_assertions)] println!("UNINTENTIONAL");
+                miscast_unintentional(slot_type);
+            }
+
+            (Sorcery,_,Sorcery) 
+                | (Incantation,_,Incantation)
+                | (Neither|Both,_,_)
+                | (_,_,Neither|Both) => 
+            {
+                //Match or not trying to cast a spell. Do nothing.
+                #[cfg(debug_assertions)] println!("MATCH / NON SPELL");
+            } 
         }
-
-        (Sorcery,Neither|Sorcery,Incantation) 
-            | (Incantation,Neither|Incantation,Sorcery) => 
-        {
-            //Mismatch. Offhand does not compensate - so it is unintentional.
-            //Swap weapon to a right one.
-            //This ensures the spell you are casting always goes through.
-            //Then fallback to previous if none of the 3 weapons work.
-            #[cfg(debug_assertions)] println!("UNINTENTIONAL");
-            miscast_unintentional(slot_type)
-                .or_else(miscast_intentional);
-        }
-
-        (Sorcery,_,Sorcery) 
-            | (Incantation,_,Incantation)
-            | (Neither|Both,_,_)
-            | (_,_,Neither|Both) => 
-        {
-            //Match or not trying to cast a spell. Do nothing.
-            #[cfg(debug_assertions)] println!("MATCH / NON SPELL");
-        } 
-    }
-    return Some(());
+    };
 }
 
+
+
 fn refresh_split_magic()
-    -> Option<()>
 {
-    let new_sm = init_split_magic();
-    #[cfg(debug_assertions)] println!("{new_sm:?}");
-    *SPLIT_MAGIC.lock().ok()?=new_sm;
-    return Some(());
+    attempt! 
+    {["err"]
+        let new_sm = init_split_magic();
+        #[cfg(debug_assertions)] println!("{new_sm:?}");
+        *SPLIT_MAGIC.lock()
+            .map_err(|_error|return anyhow!("Split Magic Mutex Poisoned"))?
+            =new_sm;
+    };
 }
 fn init_split_magic()
     -> Vec<usize>
@@ -117,24 +127,30 @@ fn init_split_magic()
 static SPLIT_MAGIC:LazyLock<Mutex<Vec<usize>>> = LazyLock::new(||{return Mutex::new(init_split_magic());});
 
 fn miscast_intentional()
-    -> Option<()>
 {
-    refresh_split_magic();
-    let target_slot = *SPLIT_MAGIC.lock().ok()?
-        .get::<usize>
-        (
-            end_slot()
-                .try_into().ok()?
-        )?;
-    temp_slot(target_slot.try_into().ok()?);
-    #[cfg(debug_assertions)]
-    println!("{} -> {target_slot}",end_slot());
-    return Some(());
+    attempt!
+    {
+        refresh_split_magic();
+        let target_slot = *SPLIT_MAGIC.lock()
+            .map_err(|_error| return anyhow!("Split Magic Mutex Poisoned"))?
+            .get::<usize>
+            (
+                end_slot()
+                    .try_into()?
+            )
+            .ok_or_else(||return anyhow!("Invalid Split Magic Index"))?;
+        temp_slot(target_slot.try_into()?);
+        #[cfg(debug_assertions)]
+        println!("{} -> {target_slot}",end_slot());
+    };
 }
 
-const fn miscast_unintentional(_slot_type:MagicType)
-    -> Option<()>
+fn miscast_unintentional(_slot_type:MagicType)
 {
-    return None;
-    //return Some(());
+    attempt!
+    {["unintentional unimplemented"]
+        return Err(anyhow!("unintentional unimplemented"));
+        #[expect(unreachable_code,reason = "Early return for testing")]
+    }
+    miscast_intentional();
 }

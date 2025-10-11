@@ -13,12 +13,10 @@ pub fn action(action:&str)
 
 #[cfg(debug_assertions)]
 fn debug_action()
-    ->Option<()>
 {
     use crate::implementation::er::utils::refresh_weapons;
 
     println!("Debugging...");
     refresh_weapons();
     println!("Debugged.");
-    return None;
 }

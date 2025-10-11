@@ -21,4 +21,4 @@ pub struct ERMod
     pub init:fn()
 }
 
-type FrameFn = fn(&FD4TaskData) -> Option<()>;
+type FrameFn = fn(&FD4TaskData);

@@ -1,8 +1,11 @@
 use std::{num::NonZero, sync::atomic::{AtomicBool, AtomicI32, Ordering}};
 
+use crate::implementation::handle_error;
+
 use super::{SETTINGS, super::super::utils::{MAGICS, refresh_magic}};
 
 mod no_miscast;
+use anyhow::anyhow;
 use no_miscast::{notify_hand, hand};
 //#[cfg(debug_assertions)]use super::show_ui;
 
@@ -11,7 +14,9 @@ use no_miscast::{notify_hand, hand};
 pub fn begin_slot() 
     -> Option<i32> 
 {   
-    MAGIC_SLOTS.temp.1.compare_exchange_weak(true, false, Ordering::Relaxed, Ordering::Relaxed).ok()?;
+    MAGIC_SLOTS.temp.1.compare_exchange(true, false, Ordering::Relaxed, Ordering::Relaxed)
+        //.inspect_err(|_|{println!("No temp slot")})
+        .ok()?;
     return Some(MAGIC_SLOTS.temp.0.load(Ordering::Relaxed));
 }
 
@@ -32,21 +37,29 @@ struct MagicSlots
 /* <=====================================================================================================================================> */
 
 fn to_slot(raw_slot:i32)
-    ->Option<()>
 {
-    //#[cfg(debug_assertions)]show_ui();
-    let slot = bound_slot(raw_slot)?;
-    MAGIC_SLOTS.persist.store(slot, Ordering::Relaxed);
-    return Some(());
+    attempt(raw_slot);
+    fn attempt(raw_slot: i32)
+        -> Option<()>
+    {
+        //#[cfg(debug_assertions)]show_ui();
+        let slot = bound_slot(raw_slot)?;
+        MAGIC_SLOTS.persist.store(slot, Ordering::Relaxed);
+        return Some(());
+    }
 }
 
 fn temp_slot(raw_slot:i32)
-    ->Option<()>
 {
-    let slot = bound_slot(raw_slot)?;
-    MAGIC_SLOTS.temp.0.store(slot, Ordering::Relaxed);
-    MAGIC_SLOTS.temp.1.store(true, Ordering::Relaxed);
-    return Some(());
+    attempt(raw_slot);
+    fn attempt(raw_slot: i32)
+        -> Option<()>
+    {
+        let slot = bound_slot(raw_slot)?;
+        MAGIC_SLOTS.temp.0.store(slot, Ordering::Relaxed);
+        MAGIC_SLOTS.temp.1.store(true, Ordering::Relaxed);
+        return Some(());
+    }
 }
 
 /* <=====================================================================================================================================> */
@@ -75,14 +88,19 @@ pub fn action(action:&str)
 {
     match action
     {
-        "notify_righthand" => {notify_hand(hand::RIGHT);},
-        "notify_lefthand" => {notify_hand(hand::LEFT);},
+        "notify_righthand" => notify_hand(hand::RIGHT),
+        "notify_lefthand" => notify_hand(hand::LEFT),
         "next" => {to_slot(end_slot()+1);},
         "prev" => {to_slot(end_slot()-1);},
         _ => 
         {
             if let Some(slot) = action.strip_prefix("to_")
-                .and_then(|slot|return slot.parse::<i32>().ok()) 
+                .and_then
+                (|slot|return slot.parse::<i32>()
+                    .inspect_err
+                        (|error|{let _:Option<()> = handle_error(Err(anyhow!(error.to_string())), &[]);})
+                    .ok()
+                ) 
                 {to_slot(slot);}
             else {println!("Unknown control: {action}");}
         }

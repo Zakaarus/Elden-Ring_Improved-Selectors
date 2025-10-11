@@ -1,7 +1,9 @@
 use std::sync::LazyLock;
+use anyhow::anyhow;
 use eldenring::fd4::FD4TaskData;
 
 use super::action_reader::register_bindings;
+use crate::attempt;
 use crate::implementation::er::modlist::spell_selector::internal::action;
 use crate::settings::Config;
 use super::super::utils::{get_main_player,change_spell};
@@ -45,18 +47,21 @@ static SETTINGS: LazyLock<Settings> = LazyLock::new
 
 fn init(){register_bindings(&CONFIG, action);}
 
-fn frame_begin(_data:&FD4TaskData) 
-    -> Option<()>
+fn frame_begin(_data:&FD4TaskData)
 {
-    change_spell(Some(get_main_player()?),begin_slot()?);
-    return Some(());
+    attempt!
+    {["no begin slot"]
+        change_spell(Some(get_main_player()?),begin_slot()
+            .ok_or_else(||return anyhow!("no begin slot"))?);
+    };
 }
 
-fn frame_end(_data:&FD4TaskData) 
-    -> Option<()>
+fn frame_end(_data:&FD4TaskData)
 {
-    change_spell(Some(get_main_player()?),end_slot());
-    return Some(());
+    attempt!
+    {
+        change_spell(Some(get_main_player()?),end_slot());
+    };
 }
 
 /* <=====================================================================================================================================> */

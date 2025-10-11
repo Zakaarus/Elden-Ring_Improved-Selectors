@@ -1,17 +1,31 @@
 use std::{num::NonZero, sync::{LazyLock, Mutex}, thread};
 
+use anyhow::{Result, anyhow};
 use eldenring::{cs::PlayerIns, param::EQUIP_PARAM_WEAPON_ST};
 use fromsoftware_shared::OwnedPtr;
+use crate::{attempt, implementation::handle_error};
+
 use super::{get_fd4pr,MagicType::{self,Both, Sorcery, Incantation, Neither},get_main_player};
 
 pub fn weapon_lookup(raw_id: i32)
     -> Option<Weapon>
 {
-    let nz_u_id:NonZero<u32> = NonZero::new(raw_id.try_into().ok()?)?;
+    let nz_u_id:u32 = handle_error
+    (
+        bound_id(raw_id),
+        &[]
+    )?;
+    
     //#[expect(clippy::arithmetic_side_effects, reason = "nz_u_id is non-zero and unsigned (positive)")]
-    let id:u32 = nz_u_id.get()
-        .checked_sub(nz_u_id.get() % 10_000_u32)?; //The lookup fails when the last four digits aren't turned into zeroes for some reason.
-    let param:&EQUIP_PARAM_WEAPON_ST = get_fd4pr()?
+    let id:u32 = nz_u_id
+        .checked_sub(nz_u_id % 10_000_u32)?; //The lookup fails when the last four digits aren't turned into zeroes for some reason.
+
+    let fd4pr = get_fd4pr();
+    let param:&EQUIP_PARAM_WEAPON_ST = handle_error
+    (
+        fd4pr,
+        &[]
+    )?
         .get(id)?;
 
     let magic_type=
@@ -30,6 +44,18 @@ pub fn weapon_lookup(raw_id: i32)
             magic_type
         }
     );
+    
+    fn bound_id(raw_id:i32)
+        -> Result<u32>
+    {
+        return Ok
+        (
+            NonZero::new(raw_id)
+            .ok_or_else(||return anyhow!("Passed ID is 0?"))?
+            .get()
+            .try_into()?
+        );
+    }
 }
 
 pub struct Weapon
@@ -44,8 +70,14 @@ fn init_weapons(player_option:Option<&mut OwnedPtr<PlayerIns>>)
     (||{
         loop 
         {
-            if let Some(player) = get_main_player() 
-                {return player;}
+            let player_attempt = get_main_player();
+            match player_attempt
+            {
+                Ok(player) =>
+                    {return player;}
+                Err(error) =>
+                    {handle_error::<()>(Err(error), &[]);}
+            }
             #[cfg(debug_assertions)]println!("init_weapons: RETRYING PLAYER");
             thread::yield_now();
         }
@@ -75,10 +107,13 @@ fn init_weapons(player_option:Option<&mut OwnedPtr<PlayerIns>>)
 }
 
 pub fn refresh_weapons()
-    -> Option<()>
-{
-    *WEAPONS.lock().ok()?=init_weapons(None);
-    return Some(());
+{   
+    attempt!
+    {
+        *WEAPONS.lock()
+            .map_err(|_error|return anyhow!("Weapons Mutex Poisoned"))?
+            =init_weapons(None);
+    };
 }
 
 pub struct EquippedWeapons
