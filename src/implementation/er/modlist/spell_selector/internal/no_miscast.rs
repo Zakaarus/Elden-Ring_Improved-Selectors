@@ -92,7 +92,7 @@ fn init_split_magic()
         { 
             if let Ok(magics) = MAGICS.0.try_lock() 
                 {break magics;} 
-            println!("RETRYING NAGICS"); 
+            #[cfg(debug_assertions)]println!("Init Split Magic Function: Magics Mutex lock failed."); 
             MAGICS.0.clear_poison(); 
             thread::sleep(Duration::from_secs(5)); 
         };
@@ -140,8 +140,8 @@ fn miscast_intentional()
             )
             .ok_or_else(||return anyhow!("Invalid Split Magic Index"))?;
         temp_slot(target_slot.try_into()?);
-        #[cfg(debug_assertions)]
-        println!("{} -> {target_slot}",end_slot());
+        #[cfg(debug_assertions)]println!
+            ("{} -> {target_slot}",end_slot());
     };
 }
 

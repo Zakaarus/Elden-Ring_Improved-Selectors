@@ -62,7 +62,7 @@ fn init_weapons(player_option:Option<&mut OwnedPtr<PlayerIns>>)
                 Err(error) =>
                     {handle_error::<()>(Err(error), "Init Weapon Function",&["World Chr Man not found.", "Main Player not found."]);}
             }
-            #[cfg(debug_assertions)]println!("init_weapons: RETRYING PLAYER");
+            #[cfg(debug_assertions)]println!("init_weapons: Main Player not found. Retrying in 5s...");
             thread::sleep(Duration::from_secs(5));
         }
     });

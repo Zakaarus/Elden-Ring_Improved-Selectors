@@ -91,7 +91,10 @@ fn input(key:i32)
                     && keybind.bind.iter()
                         .all(|&input| return is_held(input))
             )
-            {#[cfg(debug_assertions)]println!("ACTION: {}",keybind.action);(keybind.callback)(keybind.action);}
+        {
+            #[cfg(debug_assertions)]println!("ACTION: {}",keybind.action);
+            (keybind.callback)(keybind.action);
+        }
 
         return Some(());
     }

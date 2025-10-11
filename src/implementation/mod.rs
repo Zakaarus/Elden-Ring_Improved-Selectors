@@ -2,14 +2,13 @@ mod er;
 use anyhow::Result;
 pub use er::entry_point;
 
-use std::panic::PanicHookInfo;
-use std::{thread, time};
+use std::{thread, time::Duration, panic::PanicHookInfo};
 /// Allow panic error to appear in console
 pub fn panic_hook(error: &PanicHookInfo)
 {
     println!("ERROR: {error}");
     eprintln!("{error}");
-    thread::sleep(time::Duration::from_millis(5000));
+    thread::sleep(Duration::from_secs(5));
 }
 
 /// attempt!{func} where func is the body of a closure that returns `anyhow::Result`<()>
