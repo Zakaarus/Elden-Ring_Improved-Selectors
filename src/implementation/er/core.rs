@@ -11,7 +11,7 @@ static CONFIG: LazyLock<Config> = LazyLock::new(||return Config::new("general"))
 pub fn entry_point() 
 {
     wait_for_system_init(&Program::current(), Duration::MAX)
-        .unwrap_or_else(|error|panic!("SYSTEM INIT WAIT ERROR: {error}"));
+        .unwrap_or_else(|error|panic!("Entry Point - System Init Wait: {error}"));
 
 
 
@@ -19,8 +19,8 @@ pub fn entry_point()
     let cs_task = unsafe 
     { 
         get_instance::<CSTaskImp>()
-            .unwrap_or_else(|error|panic!("FAILED SINGLETON LOOKUP ERROR: {error}"))
-            .expect("CSTASKIMP RETURNED NONE?!") 
+            .unwrap_or_else(|error|panic!("Entry Point - CS Task Imp: {error}"))
+            .expect("Entry Point CS Task Imp: Returned None.") 
     };
 
     for er_mod 

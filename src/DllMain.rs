@@ -21,9 +21,9 @@ pub unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32)
     unsafe 
     {
         DisableThreadLibraryCalls(hmodule)
-            .unwrap_or_else(|error|println!("Warn: DisableThreadLibraryCalls failed. Error: {error}"));
+            .unwrap_or_else(|error|println!("DllMain - Disable Thread Library Calls: {error}. Continuing anyway..."));
         QueueUserWorkItem(Some(dll_thread), Some(null_mut()), WT_EXECUTEDEFAULT)
-            .unwrap_or_else(|error|panic!("FAILED TO START dll_thread ERROR: {error}"));
+            .unwrap_or_else(|error|panic!("DllMain - Queue User Work Item: {error}"));
     } //maybe tokio::main / tokio::async_main can be used as a replacement to QueueUserWorkItem
     return true;
 }

@@ -44,11 +44,11 @@ fn frame_begin(_data:&FD4TaskData)
         KEYBINDS.get_or_init
         (||{
             let mut buffer = KEYBIND_BUFFER.lock()
-                .unwrap_or_else(|error|panic!("MUTEX LOCK ERROR?!: {error:#?}"));
+                .unwrap_or_else(|error|panic!("Action Reader Frame Begin - Keybinds Mutex: {error:#?}"));
             let keybinds = buffer.clone();
             buffer.clear();
             drop(buffer);
-            return keybinds;
+            return keybinds.into();
         });
     };
 }
@@ -59,7 +59,7 @@ fn frame_begin(_data:&FD4TaskData)
 fn input_polling() 
 {
     let rt = Runtime::new()
-        .unwrap_or_else(|error|panic!("TOKIO RUNTIME ERROR: {error:#?}"));
+        .unwrap_or_else(|error|panic!("Input Polling - Tokio: {error:#?}"));
     rt.block_on
     (async{
         let _listener = init_custom_key_listener
@@ -72,7 +72,7 @@ fn input_polling()
         );
     });
     listen(rdev_callback)
-        .unwrap_or_else(|error| panic!("RDEV LISTENER ERROR: {error:#?}"));
+        .unwrap_or_else(|error| panic!("Input Polling - Rdev: {error:#?}"));
 }
 
 /* <=====================================================================================================================================> */
@@ -92,7 +92,7 @@ fn input(key:i32)
                         .all(|&input| return is_held(input))
             )
         {
-            #[cfg(debug_assertions)]println!("ACTION: {}",keybind.action);
+            #[cfg(debug_assertions)] println!("ACTION: {}",keybind.action);
             (keybind.callback)(keybind.action);
         }
 
@@ -135,12 +135,11 @@ fn rdev_callback(event:Event)
 fn is_held(key:i32)
     -> bool
 {
-    if (0x07_i32..0xFE_i32).contains(&key){return key_state(key);}
-    if (0x1007_i32..0x10FE_i32).contains(&key)
-    {
-        #[expect(clippy::arithmetic_side_effects, reason = "Preceeding check should ensure key is always larger than 0x1000")]
-        return !key_state(key-0x1000);
-    }
+    if (0x07_i32..0xFE_i32).contains(&key)
+        {return key_state(key);}
+    if let Some(key_up) = key.checked_sub(0x1000) 
+        && (0x07_i32..0xFE_i32).contains(&key_up)
+        {return !key_state(key_up)}
     return true;
 }
 fn key_state(key:i32)

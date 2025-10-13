@@ -6,7 +6,7 @@ pub fn action(action:&str)
     match action
     {
         "manual_refresh" => {refresh_all();},
-        "debug" => {#[cfg(debug_assertions)]debug_action();},
+        "debug" => {#[cfg(debug_assertions)] debug_action();},
         _ => {}
     }
 }

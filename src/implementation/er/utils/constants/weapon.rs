@@ -1,4 +1,4 @@
-use std::{num::NonZero, sync::{LazyLock, Mutex}, thread, time::Duration};
+use std::{num::{NonZero, TryFromIntError}, sync::{LazyLock, Mutex}, thread, time::Duration};
 
 use anyhow::{Result, anyhow};
 use eldenring::{cs::PlayerIns, param::EQUIP_PARAM_WEAPON_ST};
@@ -15,7 +15,6 @@ pub fn weapon_lookup(raw_id: i32)
             .get()
             .try_into()?;
     
-    //#[expect(clippy::arithmetic_side_effects, reason = "nz_u_id is non-zero and unsigned (positive)")]
     let id:u32 = nz_u_id
         .checked_sub(nz_u_id % 10_000_u32) //The lookup fails when the last four digits aren't turned into zeroes for some reason.
         .ok_or_else(||return anyhow!("SUBTRACTION FAILED?"))?;
@@ -62,7 +61,7 @@ fn init_weapons(player_option:Option<&mut OwnedPtr<PlayerIns>>)
                 Err(error) =>
                     {handle_error::<()>(Err(error), "Init Weapon Function",&["World Chr Man not found.", "Main Player not found."]);}
             }
-            #[cfg(debug_assertions)]println!("init_weapons: Main Player not found. Retrying in 5s...");
+            #[cfg(debug_assertions)] println!("init_weapons: Main Player not found. Retrying in 5s...");
             thread::sleep(Duration::from_secs(5));
         }
     });
@@ -70,21 +69,37 @@ fn init_weapons(player_option:Option<&mut OwnedPtr<PlayerIns>>)
     let param_ids = player.chr_asm.equipment_param_ids;
     let left = 
     (
-        #[expect(clippy::arithmetic_side_effects, reason = "weapon_slot should be bounded to 0-2")]
-        weapon_lookup(*param_ids.get((equips.left_weapon_slot as usize)*2)
-            .expect("Init Weapon Function - Left: Bad Index (No item found)"))
+        equips.left_weapon_slot
+            .checked_mul(2).ok_or_else(||anyhow!("Multiplication fail"))
+            .and_then
+            (|slot|
+                return param_ids.get::<usize>
+                (
+                    slot
+                        .try_into().map_err(|error:TryFromIntError|return anyhow!(error))?
+                ).ok_or_else(||anyhow!("Bad Index (No item found)")).copied()
+            )
+            .and_then(weapon_lookup)
             .unwrap_or_else(|error|panic!("Init Weapon Function - Left: {error}")),
         equips.left_weapon_slot
     );
     let right = 
     (
-        #[expect(clippy::arithmetic_side_effects, reason = "weapon_slot should be bounded to 0-2")]
-        weapon_lookup(*param_ids.get(1+((equips.right_weapon_slot as usize)*2))
-            .expect("Init Weapon Function - Right: Bad Index (No item found)"))
+        equips.right_weapon_slot
+            .checked_mul(2).ok_or_else(||anyhow!("Multiplication fail"))
+            .and_then
+            (|slot|
+                return param_ids.get::<usize>
+                (
+                    slot
+                        .checked_add(1).ok_or_else(||anyhow!("Addition fail"))?
+                        .try_into().map_err(|error:TryFromIntError|return anyhow!(error))?
+                ).ok_or_else(||anyhow!("Bad Index (No item found)")).copied()
+            )
+            .and_then(weapon_lookup)
             .unwrap_or_else(|error|panic!("Init Weapon Function - Right: {error}")),
         equips.left_weapon_slot
     );
-
     return EquippedWeapons 
     {
         left,
@@ -97,7 +112,7 @@ pub fn refresh_weapons()
     attempt!
     {("Weapon Refresh")
         *WEAPONS.lock()
-            .map_err(|_error|return anyhow!("Weapons Mutex Poisoned"))?
+            .map_err(|error|return anyhow!("{error:#?}"))?
             =init_weapons(None);
     };
 }

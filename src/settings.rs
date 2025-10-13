@@ -6,7 +6,7 @@ use anyhow::anyhow;
 mod default;
 use default::DEFAULT_SETTINGS_RAW;
 
-static DEFAULTS: LazyLock<Value> = LazyLock::new(||return toml::from_str(DEFAULT_SETTINGS_RAW).expect("FAILED TO READ DEFAULT CONFIGS"));
+static DEFAULTS: LazyLock<Value> = LazyLock::new(||return toml::from_str(DEFAULT_SETTINGS_RAW).expect("Defaults Init: Invalid"));
 
 unsafe extern "C" {static mut __ImageBase: c_void;}
 static FULL_CONFIG: LazyLock<Value> = LazyLock::new
@@ -38,7 +38,7 @@ static FULL_CONFIG: LazyLock<Value> = LazyLock::new
         .flatten()
         .unwrap_or_else
         (|error|{
-            eprintln!("Reverting to defaults due to error. ERROR: {error}");
+            println!("Full Config: {error}. Using defaults...");
             return DEFAULTS.to_owned();
         });
 });

@@ -8,7 +8,7 @@ use crate::{attempt, implementation::handle_error};
 use super::{get_fd4pr, get_main_player,};
 
 pub fn equipped_magic()
-    -> Vec<Magic>
+    -> Box<[Magic]>
 {
     return get_main_player()
         .map
@@ -22,7 +22,7 @@ pub fn equipped_magic()
                             (|error|{handle_error::<Magic>(Err(anyhow!(error.to_string())), "Equipped Magic Function - Magic Lookup", &["ID Can't be negative."]);})
                         .ok()
                 )
-                .collect::<Vec<Magic>>()
+                .collect::<Box<[Magic]>>()
         )
         .unwrap_or_default();
 }
@@ -30,7 +30,7 @@ pub fn equipped_magic()
 pub fn magic_lookup(id: i32, fd4pr_option:Option<&'static mut FD4ParamRepository>)
     -> Result<Magic>
 {
-    if id < 0 {return Err(anyhow!("ID Can't be negative."));}
+    if id < 0_i32 {return Err(anyhow!("ID Can't be negative."));}
     let param:&MAGIC_PARAM_ST = fd4pr_option
         .ok_or_else(||return anyhow!("(This error should be impossible)"))
         .or_else(|_|return get_fd4pr())?
@@ -52,7 +52,7 @@ pub fn magic_lookup(id: i32, fd4pr_option:Option<&'static mut FD4ParamRepository
     );
 }
 
-pub static MAGICS:LazyLock<(Mutex<Vec<Magic>>,AtomicI32)> = LazyLock::new 
+pub static MAGICS:LazyLock<(Mutex<Box<[Magic]>>,AtomicI32)> = LazyLock::new 
 (||{
     let init = init_magic();
     return 
@@ -68,24 +68,24 @@ pub fn refresh_magic()
     {("Magic Refresh")
         let init = init_magic();
         *MAGICS.0.lock()
-            .map_err(|_error| return anyhow!("Magic Mutex Poisoned"))?
+            .map_err(|error| return anyhow!("{error:#?}"))?
             =init.0;
         MAGICS.1.store(init.1, Ordering::Relaxed);
     };
 }
 fn init_magic()
-    -> (Vec<Magic>,i32)
+    -> (Box<[Magic]>,i32)
 {
-    let magic_vec = equipped_magic();
-    let len = magic_vec.len()
+    let magic_arr = equipped_magic();
+    let len = magic_arr.len()
         .try_into()
         .inspect_err
             (|error:&TryFromIntError|{handle_error::<()>(Err(anyhow!(error.to_string())), "Init Magic Function",&[]);})
         .unwrap_or_default();
     #[cfg(debug_assertions)]
-        for magic in &magic_vec
-            {println!("{:#?}", magic.magic_type);}
-    return (magic_vec,len);
+        for magic in &magic_arr
+            {#[cfg(debug_assertions)] println!("{:#?}", magic.magic_type);}
+    return (magic_arr,len);
 }
 
 #[cfg_attr(debug_assertions, derive(Debug))]

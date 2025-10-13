@@ -19,7 +19,7 @@ pub fn notify_hand(hand:i32)
         if !SETTINGS.no_miscast {return Err(anyhow!("Off"));}
         if SETTINGS.auto_refresh {refresh_weapons();}
         let weapons = WEAPONS.lock()
-            .map_err(|_error|return anyhow!("Weapons Mutex Poisoned"))?;
+            .map_err(|error|return anyhow!("{error:#?}"))?;
         let (off,notify):(MagicType,MagicType) =
             match hand
             {
@@ -31,10 +31,12 @@ pub fn notify_hand(hand:i32)
 
         let persist:usize = MAGIC_SLOTS.persist.load(Ordering::Relaxed)
             .try_into()?;
-        #[expect(clippy::indexing_slicing, reason = "persist is bounded.")]
+        
         let slot_type = MAGICS.0.lock()
-            .map(|magic_vec|return magic_vec[persist].magic_type)
-            .map_err(|_error|return anyhow!("Weapons Mutex Poisoned"))?;
+            .map_err(|error|return anyhow!("{error:#?}"))?
+            .get(persist)
+            .ok_or_else(||return anyhow!("Bad persist index"))?
+            .magic_type;
         match (notify,off,slot_type)
         {
             (Sorcery,Both|Incantation,Incantation)
@@ -80,19 +82,19 @@ fn refresh_split_magic()
         let new_sm = init_split_magic();
         #[cfg(debug_assertions)] println!("{new_sm:?}");
         *SPLIT_MAGIC.lock()
-            .map_err(|_error|return anyhow!("Split Magic Mutex Poisoned"))?
+            .map_err(|error|return anyhow!("{error:#?}"))?
             =new_sm;
     };
 }
 fn init_split_magic()
-    -> Vec<usize>
+    -> Box<[usize]>
 {
     let magics = 
         loop 
         { 
             if let Ok(magics) = MAGICS.0.try_lock() 
                 {break magics;} 
-            #[cfg(debug_assertions)]println!("Init Split Magic Function: Magics Mutex lock failed."); 
+            #[cfg(debug_assertions)] println!("Init Split Magic Function: Magics Mutex lock failed."); 
             MAGICS.0.clear_poison(); 
             thread::sleep(Duration::from_secs(5)); 
         };
@@ -117,14 +119,14 @@ fn init_split_magic()
             incantations.iter().copied()
                 .zip(sorceries.iter().copied().cycle())
         )
-        .collect::<Vec<(usize,usize)>>();
+        .collect::<Box<[(usize,usize)]>>();
     pairs.sort_by_key(|&(i,_)|return i);
     return pairs.iter()
         .map(|&(_,redir)|return redir)
         .collect();
 }   
 
-static SPLIT_MAGIC:LazyLock<Mutex<Vec<usize>>> = LazyLock::new(||{return Mutex::new(init_split_magic());});
+static SPLIT_MAGIC:LazyLock<Mutex<Box<[usize]>>> = LazyLock::new(||{return Mutex::new(init_split_magic());});
 
 fn miscast_intentional()
 {
@@ -132,7 +134,7 @@ fn miscast_intentional()
     {("Intentional Miscast")
         refresh_split_magic();
         let target_slot = *SPLIT_MAGIC.lock()
-            .map_err(|_error| return anyhow!("Split Magic Mutex Poisoned"))?
+            .map_err(|error| return anyhow!("{error:#?}"))?
             .get::<usize>
             (
                 end_slot()
@@ -140,8 +142,7 @@ fn miscast_intentional()
             )
             .ok_or_else(||return anyhow!("Invalid Split Magic Index"))?;
         temp_slot(target_slot.try_into()?);
-        #[cfg(debug_assertions)]println!
-            ("{} -> {target_slot}",end_slot());
+        #[cfg(debug_assertions)] println!("{} -> {target_slot}",end_slot());
     };
 }
 

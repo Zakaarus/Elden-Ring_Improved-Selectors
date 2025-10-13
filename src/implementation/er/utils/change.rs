@@ -1,5 +1,3 @@
-use anyhow::anyhow;
-
 use eldenring::cs::PlayerIns;
 use fromsoftware_shared::OwnedPtr;
 
@@ -10,9 +8,11 @@ pub fn change_spell(player_option:Option<&mut OwnedPtr<PlayerIns>>,slot:i32)
 {
     attempt!
     {("Change Spell Function")
-        let player = player_option
-            .ok_or_else(||return anyhow!("(This error should be impossible)"))
-            .or_else(|_|return get_main_player())?;
+        let player = 
+            if let Some(player) = player_option
+                {player}
+            else
+                {get_main_player()?};
         player.player_game_data.equipment.equip_magic_data.selected_slot = slot;
     };
 }
@@ -24,7 +24,7 @@ pub fn _show_ui()
 {
     use eldenring_util::singleton::get_instance;
     use eldenring::cs::CSFeManImp;
-
+    use anyhow::anyhow;
     
     attempt!
     {("Show UI Function")
