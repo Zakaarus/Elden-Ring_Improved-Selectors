@@ -11,6 +11,7 @@ use windows::Win32::System::Threading::WT_EXECUTEDEFAULT;
 use crate::entry_point;
 use crate::panic_hook;
 
+/// `DllMain` is the hook for injectors to run upon loading a DLL.
 #[unsafe(no_mangle)] 
 pub unsafe extern "C" fn DllMain(hmodule: HMODULE, reason: u32) 
     -> bool
@@ -41,6 +42,4 @@ unsafe extern "system" fn dll_thread(_:*mut c_void)
 /// Flux is incompatible with the box shenanigans needed to set a panic hook.
 #[flux_rs::trusted]
 fn set_panic_hook()
-{
-    panic::set_hook(Box::new(panic_hook));
-}
+    {panic::set_hook(Box::new(panic_hook));}

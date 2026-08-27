@@ -1,13 +1,14 @@
 use std::{sync::LazyLock, time::Duration};
-use eldenring::{cs::{CSTaskGroupIndex, CSTaskImp}, fd4::FD4TaskData};
-use eldenring_util::{program::Program, singleton::get_instance, system::wait_for_system_init, task::CSTaskImpExt};
+use eldenring::{cs::{CSTaskGroupIndex, CSTaskImp}, fd4::FD4TaskData, util::system::wait_for_system_init};
+use fromsoftware_shared::{Program, SharedTaskImpExt};
+//use eldenring::{program::Program, singleton::get_instance, system::wait_for_system_init, task::CSTaskImpExt};
 use crate::settings::Config;
 
 use super::modlist::MOD_LIST;
 
 static CONFIG: LazyLock<Config> = LazyLock::new(||return Config::new("general"));
 
-/// This is what runs when `DllMain` makes its thread
+/// This is what runs when `DllMain` makes its thread.
 pub fn entry_point() 
 {
     wait_for_system_init(&Program::current(), Duration::MAX)
@@ -15,22 +16,18 @@ pub fn entry_point()
 
 
 
-    //SAFETY: See get_instance
-    let cs_task = unsafe 
-    { 
-        get_instance::<CSTaskImp>()
-            .unwrap_or_else(|error|panic!("Entry Point - CS Task Imp: {error}"))
-            .expect("Entry Point CS Task Imp: Returned None.") 
-    };
+
+    let cs_task = CSTaskImp::wait_for_instance(Duration::from_secs(2))
+        .unwrap_or_else(|error|panic!("Entry Point - CS Task Imp: {error}"));
 
     for er_mod 
         in MOD_LIST.iter()
             .filter
-            (|er_mod| 
+            (|er_mod| {
                 return CONFIG
                     .deep_query(&["enabled",er_mod.context])
                     .and_then(|enabled| return enabled.as_bool())
-                    .unwrap_or(true)
+                    .unwrap_or(true);}
             )
     {
         (er_mod.init)();

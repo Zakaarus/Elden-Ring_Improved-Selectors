@@ -10,8 +10,5 @@ pub use weapon::*;
 mod instances;
 pub use instances::*;
 
-pub fn refresh_all()
-{
-    refresh_magic();
-    refresh_weapons();
-}
+mod base;
+pub use base::refresh_all;

@@ -20,25 +20,31 @@ pub fn weapon_lookup(raw_id: i32)
         .ok_or_else(||return anyhow!("SUBTRACTION FAILED?"))?;
 
     let fd4pr = get_fd4pr();
-    let param:&EQUIP_PARAM_WEAPON_ST = fd4pr?.get(id)
-        .ok_or_else(||return anyhow!("PARAM NOT FOUND"))?;
+    
+    //SAFETY: See get
+    unsafe
+    {
+        let param:&EQUIP_PARAM_WEAPON_ST = fd4pr?.get(id)
+            .ok_or_else(||return anyhow!("PARAM NOT FOUND"))?;
+    
 
-    let magic_type=
-        match(param.enable_magic(),param.enable_miracle())
-        {
-            (1,1) => Both,
-            (1,0) => Sorcery,
-            (0,1) => Incantation,
-            _ => Neither,
-        };
-
-    return Ok
-    (
-        Weapon 
-        { 
-            magic_type
-        }
-    );
+        let magic_type=
+            match(param.enable_magic(),param.enable_miracle())
+            {
+                (true,true) => Both,
+                (true,false) => Sorcery,
+                (false,true) => Incantation,
+                _ => Neither,
+            };
+    
+        return Ok
+        (
+            Weapon 
+            { 
+                magic_type
+            }
+        );
+    }
 }
 
 pub struct Weapon

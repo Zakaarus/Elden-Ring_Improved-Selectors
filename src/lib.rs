@@ -6,5 +6,5 @@ mod DllMain;
 mod implementation;
 use implementation::entry_point;
 use implementation::panic_hook;
-/// settings is where settings are kept
+/// settings is where settings are kept.
 mod settings;

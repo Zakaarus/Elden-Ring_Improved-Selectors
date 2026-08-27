@@ -1,9 +1,3 @@
-
-mod keybinds;
-pub use keybinds::register_bindings;
-
-mod action;
-
 mod base;
 pub use base::*;
 

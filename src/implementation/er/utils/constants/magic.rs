@@ -13,16 +13,20 @@ pub fn equipped_magic()
     return get_main_player()
         .map
         (|player|
-            return player.player_game_data.equipment.equip_magic_data.entries
-                .iter()
-                .filter_map
-                (|entry| 
-                    return magic_lookup(entry.param_id,None)
-                        .inspect_err
-                            (|error|{handle_error::<Magic>(Err(anyhow!(error.to_string())), "Equipped Magic Function - Magic Lookup", &["ID Can't be negative."]);})
-                        .ok()
-                )
-                .collect::<Box<[Magic]>>()
+            // SAFETY: See .as_ref
+            unsafe
+            {
+                return player.player_game_data.as_ref().equipment.equip_magic_data.entries
+                    .iter()
+                    .filter_map
+                    (|entry| 
+                        return magic_lookup(entry.param_id,None)
+                            .inspect_err
+                                (|error|{handle_error::<Magic>(Err(anyhow!(error.to_string())), "Equipped Magic Function - Magic Lookup", &["ID Can't be negative."]);})
+                            .ok()
+                    )
+                    .collect::<Box<[Magic]>>()
+            }
         )
         .unwrap_or_default();
 }
@@ -31,25 +35,32 @@ pub fn magic_lookup(id: i32, fd4pr_option:Option<&'static mut FD4ParamRepository
     -> Result<Magic>
 {
     if id < 0_i32 {return Err(anyhow!("ID Can't be negative."));}
-    let param:&MAGIC_PARAM_ST = fd4pr_option
-        .ok_or_else(||return anyhow!("(This error should be impossible)"))
-        .or_else(|_|return get_fd4pr())?
-        .get(id.try_into()?)
-        .ok_or_else(||return anyhow!("Magic not found."))?;
-    return Ok
-    (
-        Magic
-        {
-            magic_type: 
-                if param.sp_effect_category() == 3 
-                    {Sorcery} 
-                else if param.sp_effect_category() == 4
-                    {Incantation}
-                else
-                    {Neither},
-            cost:param.mp()
-        }
-    );
+    
+    // SAFETY: See get
+    unsafe
+    {
+        let param:&MAGIC_PARAM_ST = fd4pr_option
+            .ok_or_else(||return anyhow!("(This error should be impossible...)"))
+            .or_else(|_|return get_fd4pr())?
+            .get(id.try_into()?)
+            .ok_or_else(||return anyhow!("Magic not found."))?;
+    
+
+        return Ok
+        (
+            Magic
+            {
+                magic_type: 
+                    if param.sp_effect_category() == 3 
+                        {Sorcery} 
+                    else if param.sp_effect_category() == 4
+                        {Incantation}
+                    else
+                        {Neither},
+                cost:param.mp()
+            }
+        );
+    }
 }
 
 pub static MAGICS:LazyLock<(Mutex<Box<[Magic]>>,AtomicI32)> = LazyLock::new 
@@ -84,7 +95,7 @@ fn init_magic()
         .unwrap_or_default();
     #[cfg(debug_assertions)]
         for magic in &magic_arr
-            {#[cfg(debug_assertions)] println!("{:#?}", magic.magic_type);}
+            {#[cfg(debug_assertions)] #[expect(clippy::use_debug, reason = "Debug text")] {println!("{:#?}", magic.magic_type);}}
     return (magic_arr,len);
 }
 

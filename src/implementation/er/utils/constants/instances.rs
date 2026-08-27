@@ -3,16 +3,16 @@
 
 use anyhow::{Result, anyhow};
 use eldenring::{cs::{PlayerIns, WorldChrMan}, fd4::FD4ParamRepository};
-use eldenring_util::singleton::get_instance;
-use fromsoftware_shared::OwnedPtr;
+use fromsoftware_shared::{FromStatic, OwnedPtr};
 
 pub fn get_world_chr_man() //I've tried using a type arg but it claims to fail the invariant no matter how I annotate it.
     -> Result<&'static mut WorldChrMan>
 {
-    //SAFETY: See get_instance
-    return unsafe { get_instance::<WorldChrMan>()}
-        .map_err(|error|return anyhow!(error))?
-        .ok_or_else(||return anyhow!("World Chr Man not found."));
+    //SAFETY: See instance_mut
+    return unsafe { WorldChrMan::instance_mut()}
+        .map_err(|error|return anyhow!(error));
+        //.ok_or_else(||return anyhow!("World Chr Man not found."));
+        
 }
 pub fn get_main_player() 
     -> Result<&'static mut OwnedPtr<PlayerIns>>
@@ -26,8 +26,8 @@ pub fn get_main_player()
 pub fn get_fd4pr() //I've tried using a type arg but it claims to fail the invariant no matter how I annotate it.
     -> Result<&'static mut FD4ParamRepository>
 {
-    //SAFETY: See get_instance
-    return unsafe { get_instance::<FD4ParamRepository>()}
-        .map_err(|error|return anyhow!(error))?
-        .ok_or_else(||return anyhow!("FD4 Param Repository not found.")); 
+    //SAFETY: See instance_mut
+    return unsafe { FD4ParamRepository::instance_mut()}
+        .map_err(|error|return anyhow!(error));
+        //.ok_or_else(||return anyhow!("FD4 Param Repository not found.")); 
 }

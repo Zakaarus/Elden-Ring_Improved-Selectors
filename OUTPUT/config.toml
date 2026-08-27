@@ -1,5 +1,6 @@
 #WARNING: 
-#   - Pretty much everything is case sensitive.
+#	- Pretty much everything is case sensitive. I think.
+#	- Usually the entire config fails to read and reverts to a default if there's even one mistake. So check your console for errors.
 
 [general.enabled]
 action_reader = true
@@ -9,32 +10,42 @@ spell_selector = true
 #Might lower performance slightly while on. But if it's off you'll need to use the manual_refresh control.
 auto_refresh = true
 #Swaps out your spell if you try to cast the wrong kind of spell.
+#This only deals with the incantation-sorcery divide. It will not do anything regarding any other form of restriction.
 no_miscast = true
 
 #===========================================================CONTROLS===========================================================#
 
-#GUIDE:
-#   - See: https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-#   - Take the Value column's contents and place it in square brackets. 
-#   - You can place multiple inputs separated by commas into the square brackets to represent input combinations.
-#       *(e.g. [0x31,0x32] -> Press 1 and 2 at the same time.)
-#       *Activating an input combination means pressing one of its inputs while the rest are held down.
-#       *Special inputs such as mouse inputs are probably mutually exclusive.
-#           **(e.g. [0x100,0x01] -> scroll up and left click, this probably won't detect properly. It might. But probably not.)
-#       *Additionally, special inputs usually have to be the last pressed key in practice.
-#   - Make sure to unbind any keys ingame that overlap unless you want the simultaneous commands.
-#       *With the exception of controls that begin with "notify". Those MUST overlap to work properly - set them to match your ingame settings.
+#Guide:
+#https://docs.rs/device_query/latest/device_query/keymap/enum.Keycode.html
+#Every keyboard key should be covered in the above link. 
 #
-#NOTES:
-#   - Special exceptions will be added where there's no equivalent in the table. i.e. inputs that are not keys.
-#       *Currently these are:
-#           - 0x100: Scroll Up
-#           - 0x101: Scroll Down
-#           - 0x102: Scroll Left
-#           - 0x103: Scroll Right
-#           - 0x1???: The key 0x??? is a blacklist. If it's held down, the control won't activate.
-#               *(e.g. 0x1031 is when you are not holding 1 down)
-#               *This works as a nice solution to overlapping controls.
+#Mouse: m1, m2, m3, m4, m5
+#
+#Each key can have modifiers, these are non-alphanumeric symbols put directly before the key name.
+#Modifier list
+#- ! means not held down
+#	- Can be used to avoid overlapping controls
+#		- e.g. scrolling up for next spell, scrolling up while holding down shift for next item. However scrolling up while holding down shift is still scrolling up. So to make it only one or the other, you can say the next spell binding requires shift to not be held down. These bindings are "ScrollUp !LShift" and "ScrollUp LShift" respectively.
+#- ^ and _ mean key up and key down respectively. 
+#	- Upon pressing or releasing the key, it activates at that exact moment. It is never active otherwise.
+#		- Only one of either type per binding can be used as it's not possible to trigger multiple key up or key down per binding. 
+#			- i.e Each input only has one key released or pressed, while the rest are neither. 
+#		- Any ^ or _ key must be pressed or released after all other keys are satisfied.
+#	- Shouldn't really be common, there are some interesting combinations where one control is key down and the other is key up forcing a key to do two consecutive inputs in order.
+#- Don't make keys !, ^ or _ simultaneously.
+#- A key is active as long as it is held down if it doesn't use !, ^ or _. 
+#	- A key counts as held down if it is pressed, and not held down if it is released.
+#		- So any time a ^ key is active, it would also be active if it were a ! key (but not vice-versa). A _ key would likewise be the same with an unmodified key.
+#- Whitespaces represent AND.
+#	- It is essentially a separator for keys that all belong to the same binding.
+#	- Order shouldn't matter at all.
+#- There's no OR modifier. 
+#	- That would introduce ambiguity and a need for brackets and order of operations for very little gain.
+#	- This does mean you need to create new bindings for each combination.
+#		- But the point of the controls config isn't to compress everything to as little characters as possible. It's to have every binding explicitly listed in an immediately readable format.
+#	- Instead, separate a new string in the array with ,.
+#		- e.g. ["LShift A","LShift B"] instead of something like ["LShift (A|B)"].
+#			- Ironically it would be nice to have both left and right shift as one but I'm already suffering when it comes to processing this config.
 
 #==============================================================================================================================#
 
@@ -44,26 +55,26 @@ no_miscast = true
 #Updates where your last and first slots are for looping around. 
 #If you change your spells memorised but don't refresh, some spells may be inaccessible or sometimes you'll end up in empty slots.
 #If auto_refresh is false, make it something you'll press at least once after changing spells memorised, like the binding for going back out of a menu, or rolling.
-manual_refresh = [] 
+manual_refresh = []
 debug = []
 
 [spell_selector.controls]
-next = [0x100] #This actually works even with the vanilla binding.
-prev = [0x101]
-to_0 = [0x31, 0x1010]
-to_1 = [0x32, 0x1010]
-to_2 = [0x33, 0x1010]
-to_3 = [0x34, 0x1010]
-to_4 = [0x35]
-to_5 = [0x36]
-to_6 = [0x37]
-to_7 = [0x38]
-to_8 = [0x39]
-to_9 = [0x30]
-to_10 = [0x31, 0x10]
-to_11 = [0x32, 0x10]
-to_12 = [0x33, 0x10]
-to_13 = [0x34, 0x10]
+next = ["ScrollUp !LShift"]
+prev = ["ScrollDown !LShift"]
+to_0 = ["Key1 !LShift"]
+to_1 = ["Key2 !LShift"]
+to_2 = ["Key3 !LShift"]
+to_3 = ["Key4 !LShift"]
+to_4 = ["Key5"]
+to_5 = ["Key6"]
+to_6 = ["Key7"]
+to_7 = ["Key8"]
+to_8 = ["Key9"]
+to_9 = ["Key0"]
+to_10 = ["Key1 LShift"]
+to_11 = ["Key2 LShift"]
+to_12 = ["Key3 LShift"]
+to_13 = ["Key4 LShift"]
 #Used by no_miscast.
-notify_righthand = [0x1]
-notify_lefthand = [0x2]
+notify_righthand = ["m1"]
+notify_lefthand = ["m2"]

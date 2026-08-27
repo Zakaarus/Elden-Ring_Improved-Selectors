@@ -47,16 +47,18 @@ static FULL_CONFIG: LazyLock<Value> = LazyLock::new
 
 /// Thread/context local copies of a Value, taken from both `FULL_CONFIG` and DEFAULTS.
 /// The context is the name of said Value.
-/// Use them as-is or deserialise into more specialised structs
+/// Use them as-is or deserialise into more specialised structs.
 pub struct Config
 {
+    /// a toml Value representing the config file at its default state, hardcoded elsewhere.
     pub defaults:Option<Value>,
+    /// a toml Value representing the config file, read from disk.
     pub file:Option<Value>
 }
 
 impl Config
 {
-    /// Name of the Value -> Config of that Value
+    /// Name of the Value -> Config of that Value.
     pub fn new(context:&'static str) 
         -> Self
     {
@@ -67,7 +69,7 @@ impl Config
         };
     }
 
-    /// Nested Value's path as an array of strings -> Value from lookup in Config
+    /// Nested Value's path as an array of strings -> Value from lookup in Config.
     pub fn deep_query(&self,name:&[&str])
         -> Option<&Value>
     {

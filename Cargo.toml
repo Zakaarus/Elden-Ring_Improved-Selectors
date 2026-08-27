@@ -9,20 +9,24 @@ keywords = ["elden ring"] #TBD
 categories = ["elden ring"] #TBD
 
 [dependencies]
-eldenring = "0.10.0"
-eldenring-util = "0.10.0"
-fromsoftware-shared = "0.10.0"
+eldenring = { git = "https://github.com/vswarte/fromsoftware-rs" } #"0.14.0"
+fromsoftware-shared = { git = "https://github.com/vswarte/fromsoftware-rs" } #"0.14.0"
 windows = { version = "0.62.2", features = ["Win32_System_Threading", "Win32_System_LibraryLoader", "Win32_UI_Input_KeyboardAndMouse"] }
 flux-rs = { git  = "https://github.com/flux-rs/flux.git" }
-win-key-event = {git ="https://github.com/friesliam/win-key-event"}
-serde = "1.0.228"
-toml = "0.9.8"
+#win-key-event = {git ="https://github.com/friesliam/win-key-event"} #WHERE DID YOUR CRATE GO FRIESLIAM PLEASE
+serde = {version = "1.0.228", features = ["derive", "serde_derive"]}
+toml = "1.1.4" #+spec-1.1.0" #0.9.8
 anyhow = "1.0.100"
-tokio = "1.47.1"
-rdev = "0.5.3"
+tokio = { version = "1.47.1", features = ["rt-multi-thread"] }
+willhook = "0.6.3"
+device_query = "4.0.1"
+
 
 [lib]
 crate-type = ["cdylib"]
+
+[profile.release]
+opt-level = 0 #Update causes crashes relating to CS Task Imp when using release build optimisations.
 
 #=== Development tool settings ===#
 
@@ -58,6 +62,7 @@ integer_division_remainder_used = "allow" #bruh
 blanket_clippy_restriction_lints = "allow" #lol I'll disable them as I go
 multiple_crate_versions = "allow" #if I could figure out how patching works I would.
 items_after_statements = "allow" #I kind of want to keep all items in one spot at the end.
+field_scoped_visibility_modifiers = "allow" #I broadly will use a lot of fields that have no restrictions, making getter/setter logic unnecessary
 
 [lints.rust]
-unused_imports = "deny"
+unused_imports = "warn"

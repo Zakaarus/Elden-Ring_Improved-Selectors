@@ -6,7 +6,8 @@ use crate::{attempt, implementation::{er::utils::{MagicType::{self, Both, Incant
 
 use super::{SETTINGS, MAGIC_SLOTS, end_slot, temp_slot, MAGICS};
 
-pub mod hand 
+pub enum Hand {}
+impl Hand 
 {
     pub const LEFT:i32 = 0;
     pub const RIGHT:i32 = 1;
@@ -23,8 +24,8 @@ pub fn notify_hand(hand:i32)
         let (off,notify):(MagicType,MagicType) =
             match hand
             {
-                hand::LEFT => (weapons.right.0.magic_type,weapons.left.0.magic_type),
-                hand::RIGHT => (weapons.left.0.magic_type,weapons.right.0.magic_type),
+                Hand::LEFT => (weapons.right.0.magic_type,weapons.left.0.magic_type),
+                Hand::RIGHT => (weapons.left.0.magic_type,weapons.right.0.magic_type),
                 _=> return Err(anyhow!("INCORRECT SELECTED WEAPON ARGUMENT?"))
             };
         drop(weapons);
