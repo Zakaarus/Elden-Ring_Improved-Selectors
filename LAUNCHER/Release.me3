@@ -1,0 +1,11 @@
+profileVersion = "v1"
+
+[[supports]]
+game = "eldenring"
+
+[[natives]]
+path = 'er_IS.dll'
+
+[[packages]]
+enabled = false
+path = 'package'

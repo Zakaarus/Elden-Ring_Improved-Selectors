@@ -17,7 +17,7 @@ impl From<&str>
         -> Self 
     {
         return Keycode::from_str(value)
-            .inspect_err(|error|println!("{value:} TO KEYBOARD Keycode ERROR: {error:}. Trying as mouse input."))
+            .inspect_err(|error|println!("\"{value:}\" TO KEYBOARD Keycode ERROR: {error:}. Trying as mouse input."))
             .map_or_else(|_|return Self::Other(value.to_owned()), Self::Keycode);
     }
 }

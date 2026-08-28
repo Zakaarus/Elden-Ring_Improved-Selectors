@@ -9,7 +9,7 @@ pub fn get_world_chr_man() //I've tried using a type arg but it claims to fail t
     -> Result<&'static mut WorldChrMan>
 {
     //SAFETY: See instance_mut
-    return unsafe { WorldChrMan::instance_mut()}
+    return unsafe { WorldChrMan::instance_mut() }
         .map_err(|error|return anyhow!(error));
         //.ok_or_else(||return anyhow!("World Chr Man not found."));
         

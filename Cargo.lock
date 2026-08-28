@@ -105,7 +105,7 @@ dependencies = [
 
 [[package]]
 name = "elden-ring_improved-selectors"
-version = "4.0.0"
+version = "4.0.1"
 dependencies = [
  "anyhow",
  "device_query",
