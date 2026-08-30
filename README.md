@@ -12,6 +12,7 @@ todo:
   - Cast/use hotkey
 - Separated roll / sprint button
 - Better refresh/update system
+- no_miscast rework to not need manual "notify" binding, instead detecting action inputs
 
 
 ty to people on discord for being patient with me and answering my questions
@@ -21,6 +22,8 @@ ty to people on discord for being patient with me and answering my questions
 - chainfailure
 - _indura
 - thechewanater
+- managarmana
+- mo126953
 
 
 
@@ -40,6 +43,9 @@ ty to people on bsky for reading my cursed code
 
 libs from:
 - chainfailure (elden ring rust crate + I used the special-effect example as a template)
+- ElaDiDu (HKS script extender was a guide I used for my fork of eldenring-rs's update_magic_id)
+- ividyon 
+- Vawser (references for decompiled c0000.HKS to help me figure out how to update magic ids)
 
 
 
