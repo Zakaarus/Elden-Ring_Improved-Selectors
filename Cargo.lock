@@ -105,7 +105,7 @@ dependencies = [
 
 [[package]]
 name = "elden-ring_improved-selectors"
-version = "4.0.1"
+version = "4.1.0"
 dependencies = [
  "anyhow",
  "device_query",
@@ -122,7 +122,7 @@ dependencies = [
 [[package]]
 name = "eldenring"
 version = "0.14.0"
-source = "git+https://github.com/vswarte/fromsoftware-rs#0b44ede3ae9d95d39bfef65edc0694380a1b83c3"
+source = "git+https://github.com/Zakaarus/fromsoftware-rs#599bc080d9b83868d82e9d64ffce2cde09e0dbfc"
 dependencies = [
  "bitfield",
  "bitflags",
@@ -194,7 +194,7 @@ dependencies = [
 [[package]]
 name = "fromsoftware-shared"
 version = "0.14.0"
-source = "git+https://github.com/vswarte/fromsoftware-rs#0b44ede3ae9d95d39bfef65edc0694380a1b83c3"
+source = "git+https://github.com/Zakaarus/fromsoftware-rs#599bc080d9b83868d82e9d64ffce2cde09e0dbfc"
 dependencies = [
  "bitflags",
  "from-singleton",
@@ -210,7 +210,7 @@ dependencies = [
 [[package]]
 name = "fromsoftware-shared-macros"
 version = "0.14.0"
-source = "git+https://github.com/vswarte/fromsoftware-rs#0b44ede3ae9d95d39bfef65edc0694380a1b83c3"
+source = "git+https://github.com/Zakaarus/fromsoftware-rs#599bc080d9b83868d82e9d64ffce2cde09e0dbfc"
 dependencies = [
  "inflections",
  "proc-macro2",
@@ -221,7 +221,7 @@ dependencies = [
 [[package]]
 name = "fromsoftware-shared-stl"
 version = "0.14.0"
-source = "git+https://github.com/vswarte/fromsoftware-rs#0b44ede3ae9d95d39bfef65edc0694380a1b83c3"
+source = "git+https://github.com/Zakaarus/fromsoftware-rs#599bc080d9b83868d82e9d64ffce2cde09e0dbfc"
 
 [[package]]
 name = "fxhash"
@@ -234,9 +234,9 @@ dependencies = [
 
 [[package]]
 name = "glam"
-version = "0.33.5"
+version = "0.33.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c426daf70099baff33fac0ba85151c42424861c56828cef9ba02dacb78eb6b26"
+checksum = "21fef0953c54fd3de2f44b743fbf77e044c81a25faee03636dfccc0d35135e23"
 
 [[package]]
 name = "hashbrown"

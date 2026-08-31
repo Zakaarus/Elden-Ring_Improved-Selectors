@@ -1,25 +1,35 @@
 use std::sync::LazyLock;
+use std::time::Duration;
 use std::{mem, thread};
+use eldenring::cs::{CSTaskGroupIndex, CSTaskImp};
 use eldenring::fd4::FD4TaskData;
+use eldenring::util::system::wait_for_system_init;
+use fromsoftware_shared::{Program, SharedTaskImpExt};
 
 use crate::attempt;
 use crate::implementation::er::utils::get_world_chr_man;
 use crate::settings::Config;
-use super::super::ERMod;
+use super::super::GameMod;
 use super::{keybinds::{KEYBIND_BUFFER, KEYBINDS, KeyState, KeyEvent, Key}, input_polling,action::action, register_bindings, is_held};
 
-pub const MOD: ERMod = ERMod
+pub const MOD: GameMod = GameMod
 {
     context:"action_reader",
-    frame_begin,
-    frame_end,
     init
 };
 
 fn init()
 {
+    wait_for_system_init(&Program::current(), Duration::MAX)
+        .unwrap_or_else(|error|panic!("Entry Point - System Init Wait: {error}"));
+    
     thread::spawn(input_polling);
     register_bindings(&CONFIG, action);
+    
+    let cs_task = CSTaskImp::wait_for_instance(Duration::from_secs(2))
+        .unwrap_or_else(|error|panic!("Entry Point - CS Task Imp: {error}"));
+    
+    cs_task.run_recurring(frame_begin,CSTaskGroupIndex::FrameBegin);
 }
 
 fn frame_begin(_data:&FD4TaskData)
@@ -34,11 +44,6 @@ fn frame_begin(_data:&FD4TaskData)
             return mem::take(&mut *buffer).into_boxed_slice();
         });
     };
-}
-
-const fn frame_end(_data:&FD4TaskData)
-{
-
 }
 
 // <================================================================================>
@@ -76,8 +81,8 @@ pub fn input(event:&KeyEvent)
         #[cfg(debug_assertions)] 
         #[expect(clippy::use_debug, reason = "Debug output")]
         {
-            println!("ACTION: {:}",keybind.action);
-            println!("KEYBIND: {:#?}", keybind.bind);
+            println!("ACTION: {:#?}",keybind.action);
+            //println!("KEYBIND: {:#?}", keybind.bind);
         }
         (keybind.callback)(&keybind.action);
     }

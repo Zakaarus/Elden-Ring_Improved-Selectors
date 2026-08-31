@@ -14,9 +14,16 @@ pub fn change_spell(player_option:Option<&mut OwnedPtr<PlayerIns>>,slot:i32)
             else
                 {get_main_player()?};
         
+        
+        let usize_slot:usize = slot.try_into()?;
         //SAFETY: See .as_mut
         unsafe
-            {player.player_game_data.as_mut().equipment.equip_magic_data.selected_slot = slot;}
+        {
+            player.player_game_data.as_mut().equipment.equip_magic_data.selected_slot = slot;
+            if let Some(magic_entry) = player.player_game_data.as_ref().equipment.equip_magic_data.entries
+                .get::<usize>(usize_slot)
+                {player.modules.magic.update_magic_id(magic_entry.param_id);}
+        }
     };
 }
 

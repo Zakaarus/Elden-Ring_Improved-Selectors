@@ -38,12 +38,7 @@ pub fn weapon_lookup(raw_id: i32)
             };
     
         return Ok
-        (
-            Weapon 
-            { 
-                magic_type
-            }
-        );
+            (Weapon {magic_type});
     }
 }
 

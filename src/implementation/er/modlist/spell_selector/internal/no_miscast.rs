@@ -4,9 +4,9 @@ use anyhow::anyhow;
 
 use crate::{attempt, implementation::{er::utils::{MagicType::{self, Both, Incantation, Neither, Sorcery}, WEAPONS, refresh_weapons}}};
 
-use super::{SETTINGS, MAGIC_SLOTS, end_slot, temp_slot, MAGICS};
+use super::{SETTINGS, MAGIC_SLOTS, get_end_slot, temp_slot, MAGICS};
 
-pub enum Hand {}
+pub struct Hand(pub !); //I can likely make this an enum with repr
 impl Hand 
 {
     pub const LEFT:i32 = 0;
@@ -37,7 +37,7 @@ pub fn notify_hand(hand:i32)
             .map_err(|error|return anyhow!("{error:#?}"))?
             .get(persist)
             .ok_or_else(||return anyhow!("Bad persist index"))?
-            .magic_type;
+            .spell_type;
         match (notify,off,slot_type)
         {
             (Sorcery,Both|Incantation,Incantation)
@@ -80,11 +80,11 @@ fn refresh_split_magic()
 {
     attempt! 
     {["err"] ("Split Magic Refresh")
-        let new_sm = init_split_magic();
-        #[cfg(debug_assertions)] println!("{new_sm:?}");
+        //let new_sm = init_split_magic();
+        //#[cfg(debug_assertions)] println!("{new_sm:?}");
         *SPLIT_MAGIC.lock()
             .map_err(|error|return anyhow!("{error:#?}"))?
-            =new_sm;
+            = init_split_magic();
     };
 }
 fn init_split_magic()
@@ -104,9 +104,9 @@ fn init_split_magic()
         (
             (Vec::new(),Vec::new()),
             |(mut sorceries,mut incantations),(i,magic)|{
-                if matches!(magic.magic_type,Sorcery)
+                if matches!(magic.spell_type,Sorcery)
                     {sorceries.push(i);}
-                if matches!(magic.magic_type,Incantation)
+                if matches!(magic.spell_type,Incantation)
                     {incantations.push(i);}
                 return (sorceries,incantations);
             }
@@ -138,12 +138,12 @@ fn miscast_intentional()
             .map_err(|error| return anyhow!("{error:#?}"))?
             .get::<usize>
             (
-                end_slot()
+                get_end_slot()
                     .try_into()?
             )
             .ok_or_else(||return anyhow!("Invalid Split Magic Index"))?;
         temp_slot(target_slot.try_into()?);
-        #[cfg(debug_assertions)] println!("{} -> {target_slot}",end_slot());
+        #[cfg(debug_assertions)] println!("{} -> {target_slot}",get_end_slot());
     };
 }
 

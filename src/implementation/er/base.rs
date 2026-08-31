@@ -1,7 +1,4 @@
-use std::{sync::LazyLock, time::Duration};
-use eldenring::{cs::{CSTaskGroupIndex, CSTaskImp}, fd4::FD4TaskData, util::system::wait_for_system_init};
-use fromsoftware_shared::{Program, SharedTaskImpExt};
-//use eldenring::{program::Program, singleton::get_instance, system::wait_for_system_init, task::CSTaskImpExt};
+use std::sync::LazyLock;
 use crate::settings::Config;
 
 use super::modlist::MOD_LIST;
@@ -11,35 +8,14 @@ static CONFIG: LazyLock<Config> = LazyLock::new(||return Config::new("general"))
 /// This is what runs when `DllMain` makes its thread.
 pub fn entry_point() 
 {
-    wait_for_system_init(&Program::current(), Duration::MAX)
-        .unwrap_or_else(|error|panic!("Entry Point - System Init Wait: {error}"));
-
-
-
-
-    let cs_task = CSTaskImp::wait_for_instance(Duration::from_secs(2))
-        .unwrap_or_else(|error|panic!("Entry Point - CS Task Imp: {error}"));
-
-    for er_mod 
+    for game_mod 
         in MOD_LIST.iter()
             .filter
-            (|er_mod| {
+            (|game_mod| {
                 return CONFIG
-                    .deep_query(&["enabled",er_mod.context])
+                    .deep_query(&["enabled",game_mod.context])
                     .and_then(|enabled| return enabled.as_bool())
                     .unwrap_or(true);}
             )
-    {
-        (er_mod.init)();
-        cs_task.run_recurring
-        (
-            |data: &FD4TaskData| {(er_mod.frame_begin)(data);},
-            CSTaskGroupIndex::FrameBegin,
-        );
-        cs_task.run_recurring
-        (
-            |data: &FD4TaskData| {(er_mod.frame_end)(data);},
-            CSTaskGroupIndex::FrameEnd,
-        );
-    }
+        {(game_mod.init)();}
 }

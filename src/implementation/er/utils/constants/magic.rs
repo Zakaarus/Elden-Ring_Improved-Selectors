@@ -50,7 +50,8 @@ pub fn magic_lookup(id: i32, fd4pr_option:Option<&'static mut FD4ParamRepository
         (
             Magic
             {
-                magic_type: 
+                id,
+                spell_type: 
                     if param.sp_effect_category() == 3 
                         {Sorcery} 
                     else if param.sp_effect_category() == 4
@@ -80,7 +81,7 @@ pub fn refresh_magic()
         let init = init_magic();
         *MAGICS.0.lock()
             .map_err(|error| return anyhow!("{error:#?}"))?
-            =init.0;
+            = init.0;
         MAGICS.1.store(init.1, Ordering::Relaxed);
     };
 }
@@ -95,19 +96,21 @@ fn init_magic()
         .unwrap_or_default();
     #[cfg(debug_assertions)]
         for magic in &magic_arr
-            {#[cfg(debug_assertions)] #[expect(clippy::use_debug, reason = "Debug text")] {println!("{:#?}", magic.magic_type);}}
+            {#[cfg(debug_assertions)] #[expect(clippy::use_debug, reason = "Debug text")] {println!("{:#?}", magic.spell_type);}}
     return (magic_arr,len);
 }
 
 #[cfg_attr(debug_assertions, derive(Debug))]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum MagicType{Sorcery,Incantation,Neither,Both}
 
 
 
 pub struct Magic
 {
-    pub magic_type:MagicType,
+    #[expect(dead_code, reason = "ID will be used one day.")]
+    pub id:i32,
+    pub spell_type:MagicType,
     #[expect(dead_code, reason = "Cost will be used one day.")]
     pub cost:i16
 }

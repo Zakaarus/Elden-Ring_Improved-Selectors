@@ -1,7 +1,7 @@
 [package]
 name = "elden-ring_improved-selectors"
 description = "Reworked item, spell and weapon selection systems for Elden Ring."
-version = "4.0.1"
+version = "4.1.0"
 edition = "2024"
 license = "MIT" #TBD
 repository = "https://github.com/Zakaarus/Elden-Ring_Improved-Selectors"
@@ -9,8 +9,8 @@ keywords = ["elden ring"] #TBD
 categories = ["elden ring"] #TBD
 
 [dependencies]
-eldenring = { git = "https://github.com/vswarte/fromsoftware-rs" } #"0.14.0"
-fromsoftware-shared = { git = "https://github.com/vswarte/fromsoftware-rs" } #"0.14.0"
+eldenring =  { git = "https://github.com/Zakaarus/fromsoftware-rs" } #{ path = "../fromsoftware-rs/crates/eldenring" } #"0.14.0"
+fromsoftware-shared = { git = "https://github.com/Zakaarus/fromsoftware-rs" } #{ path = "../fromsoftware-rs/crates/shared" } #"0.14.0"
 windows = { version = "0.62.2", features = ["Win32_System_Threading", "Win32_System_LibraryLoader", "Win32_UI_Input_KeyboardAndMouse"] }
 flux-rs = { git  = "https://github.com/flux-rs/flux.git" }
 #win-key-event = {git ="https://github.com/friesliam/win-key-event"} #WHERE DID YOUR CRATE GO FRIESLIAM PLEASE

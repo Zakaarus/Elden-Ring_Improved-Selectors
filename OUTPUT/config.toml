@@ -9,9 +9,12 @@ spell_selector = true
 [spell_selector]
 #Might lower performance slightly while on. But if it's off you'll need to use the manual_refresh control.
 auto_refresh = true
+
 #Swaps out your spell if you try to cast the wrong kind of spell.
 #This only deals with the incantation-sorcery divide. It will not do anything regarding any other form of restriction.
-no_miscast = true
+no_miscast = false
+
+cast_slot = true
 
 #===========================================================CONTROLS===========================================================#
 
@@ -20,6 +23,8 @@ no_miscast = true
 #Every keyboard key should be covered in the above link. 
 #
 #Mouse: m1, m2, m3, m4, m5
+#
+#Usually try to avoid overlapping in-game binds with this mod's binds, except if it has "notify" in the name - in which case you must match them as their purpose is to notify the mod of certain keybinds.
 #
 #Each key can have modifiers, these are non-alphanumeric symbols put directly before the key name.
 #Modifier list
@@ -61,20 +66,38 @@ debug = []
 [spell_selector.controls]
 next = ["ScrollUp !LShift"]
 prev = ["ScrollDown !LShift"]
-to_0 = ["Key1 !LShift"]
-to_1 = ["Key2 !LShift"]
-to_2 = ["Key3 !LShift"]
-to_3 = ["Key4 !LShift"]
-to_4 = ["Key5"]
-to_5 = ["Key6"]
-to_6 = ["Key7"]
-to_7 = ["Key8"]
-to_8 = ["Key9"]
-to_9 = ["Key0"]
-to_10 = ["Key1 LShift"]
-to_11 = ["Key2 LShift"]
-to_12 = ["Key3 LShift"]
-to_13 = ["Key4 LShift"]
+to_0 = ["Key1 LShift !LControl"]
+to_1 = ["Key2 LShift !LControl"]
+to_2 = ["Key3 LShift !LControl"]
+to_3 = ["Key4 LShift !LControl"]
+to_4 = ["Key5 LShift"]
+to_5 = ["Key6 LShift"]
+to_6 = ["Key7 LShift"]
+to_7 = ["Key8 LShift"]
+to_8 = ["Key9 LShift"]
+to_9 = ["Key0 LShift"]
+to_10 = ["Key1 LShift LControl"]
+to_11 = ["Key2 LShift LControl"]
+to_12 = ["Key3 LShift LControl"]
+to_13 = ["Key4 LShift LControl"]
+
+#Used by cast_slot
+cast = ["Grave"]
+cast_0 = ["Key1 !LShift !LControl"]
+cast_1 = ["Key2 !LShift !LControl"]
+cast_2 = ["Key3 !LShift !LControl"]
+cast_3 = ["Key4 !LShift !LControl"]
+cast_4 = ["Key5 !LShift"]
+cast_5 = ["Key6 !LShift"]
+cast_6 = ["Key7 !LShift"]
+cast_7 = ["Key8 !LShift"]
+cast_8 = ["Key9 !LShift"]
+cast_9 = ["Key0 !LShift"]
+cast_10 = ["Key1 !LShift LControl"]
+cast_11 = ["Key2 !LShift LControl"]
+cast_12 = ["Key3 !LShift LControl"]
+cast_13 = ["Key4 !LShift LControl"]
+
 #Used by no_miscast.
 notify_righthand = ["m1"]
 notify_lefthand = ["m2"]
