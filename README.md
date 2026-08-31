@@ -47,7 +47,9 @@ libs from:
 - ividyon 
 - Vawser (references for decompiled c0000.HKS to help me figure out how to update magic ids)
 
-
+ideas/suggestions on nexusmods:
+- KillerHell
+- RumiYumi
 
 
 
