@@ -3,12 +3,10 @@ use anyhow::anyhow;
 
 use super::super::action_reader::register_bindings;
 use crate::attempt;
-use super::internal::{action, cast_slot::request_actions};
+use super::internal::{action, cast_slot::request_actions, to_slot, begin_slot, end_slot};
 use crate::settings::Config;
 use super::super::super::utils::{get_main_player,change_spell};
 use super::super::GameMod;
-use super::begin_slot;
-use super::end_slot;
 
 
 use fromsoftware_shared::{Program, SharedTaskImpExt};
@@ -67,6 +65,8 @@ fn init()
     cs_task.run_recurring(frame_begin,CSTaskGroupIndex::FrameBegin);
     cs_task.run_recurring(frame_end,CSTaskGroupIndex::FrameEnd);
     cs_task.run_recurring(chr_ins_pre_behavior_safe, CSTaskGroupIndex::ChrIns_PreBehaviorSafe);
+    
+    if SETTINGS.cast_slot {to_slot(0);} //There's a bug where before the first to_slot, cast_slot casts the wrong spell. Hopefully no one cares that their exact slot between loads isn't the same.
 }
 
 fn chr_ins_pre_behavior_safe(_data:&FD4TaskData)
